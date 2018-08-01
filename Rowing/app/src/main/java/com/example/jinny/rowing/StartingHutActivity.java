@@ -33,7 +33,8 @@ import java.util.Date;
 public class StartingHutActivity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://192.168.254.167:8080/airquayRowing/main/setRaceStart";
     private static final String URL_ADDRESS_TIME = "http://192.168.254.167:8080/airquayRowing/main/pastTimeSave";
-    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.167:8080/airquayRowing/main/getRaceNum.jsp";
+    private static final String URL_ADDRESS_GET_RACE_NUMBER="http://192.168.254.167:8080/airquayRowing/main/setRaceStart";
+    // private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.167:8080/airquayRowing/main/getRaceNum.jsp";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
@@ -141,13 +142,27 @@ public class StartingHutActivity extends AppCompatActivity {
                     case RUNNING://경기중 상태
                         try {
                             TimerCaller c = new TimerCaller();
-                            c.setDate("0");
+                            c.setDate("3");
                             c.execute();
                         } catch (Exception e) {
                             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                             finish();
                             e.printStackTrace();
                         }
+
+                        pastTime=timerTime.getText().toString();
+                        String[] timeTemp=pastTime.split(":|[.]");
+                        Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
+                        String[] timeSplit=timeTemp[2].split(".");
+                        try {
+                            TimeSender e = new TimeSender();
+                            e.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
+                        } catch (Exception e) {
+                            Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                            finish();
+                            e.printStackTrace();
+                        }
+
                         raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.end_state_border));
                         raceState.setText(" 대기 ");
                         Reset_Button.setEnabled(true);
@@ -238,7 +253,7 @@ public class StartingHutActivity extends AppCompatActivity {
             case R.id.Reset_Button://Reset버튼 누를 때
                 try {
                     TimerCaller d = new TimerCaller();
-                    d.setDate("0");
+                    d.setDate("4");
                     d.execute();
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
