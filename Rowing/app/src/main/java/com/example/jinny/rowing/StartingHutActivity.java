@@ -1,5 +1,6 @@
 package com.example.jinny.rowing;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,8 +34,7 @@ import java.util.Date;
 public class StartingHutActivity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://192.168.254.167:8080/airquayRowing/main/setRaceStart";
     private static final String URL_ADDRESS_TIME = "http://192.168.254.167:8080/airquayRowing/main/pastTimeSave";
-    private static final String URL_ADDRESS_GET_RACE_NUMBER="http://192.168.254.167:8080/airquayRowing/main/setRaceStart";
-    // private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.167:8080/airquayRowing/main/getRaceNum.jsp";
+    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.167:8080/airquayRowing/main/getRaceNum";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
@@ -81,18 +81,19 @@ public class StartingHutActivity extends AppCompatActivity {
                     CustomTask a = new CustomTask();
                     a.setDate(raceDate.getText().toString());
                     a.execute();
-                    raceNum.setText(String.valueOf(tempNumber));
-                    raceState.setVisibility(View.INVISIBLE);
-                    timerTime.setText(getReset());
-                    twoMinutesButton.setEnabled(true);
-                    goButton.setEnabled(false);
-                    Finish_Button.setEnabled(false);
-                    data.setEnabled(false);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
                 }
+                raceNum.setText(Integer.toString(tempNumber));
+                raceState.setVisibility(View.INVISIBLE);
+                timerTime.setText(getReset());
+                twoMinutesButton.setEnabled(true);
+                goButton.setEnabled(false);
+                Finish_Button.setEnabled(false);
+                data.setEnabled(false);
+
             }
         });
     }
@@ -119,6 +120,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 switch (tStatus)
                 {
                     case IDLE://2분전 상태
+
                         try {
                             TimerCaller b = new TimerCaller();
                             b.setDate("1");
@@ -139,7 +141,9 @@ public class StartingHutActivity extends AppCompatActivity {
                         tStatus = RUNNING;
                         Log.i("IDLE", "IDLE");
                         break;
+
                     case RUNNING://경기중 상태
+
                         try {
                             TimerCaller c = new TimerCaller();
                             c.setDate("3");
@@ -173,6 +177,7 @@ public class StartingHutActivity extends AppCompatActivity {
                         tStatus = PAUSE;
                         Log.i("RUNNING", "RUNNING");
                         break;
+
                     case PAUSE://FalseStart 상태
                         try {
                             TimerCaller c = new TimerCaller();
@@ -198,6 +203,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 break;
 
             case R.id.two_minute_button://2분전버튼 누를 때
+
                 try {
                     TimerCaller c = new TimerCaller();
                     c.setDate("2");
@@ -251,6 +257,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 break;
 
             case R.id.Reset_Button://Reset버튼 누를 때
+
                 try {
                     TimerCaller d = new TimerCaller();
                     d.setDate("4");
@@ -262,6 +269,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 }
                 timerTime.setText(getReset());
                 goButton.setEnabled(true);
+
         }
     }
 
@@ -319,7 +327,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
         protected Void doInBackground(Void... param) {
             try {
-                URL url = new URL(URL_ADDRESS_GET_RACE_NUMBER);//보낼 jsp 주소
+                URL url = new URL(URL_ADDRESS_GET_RACE_NUMBER);//보낼 주소
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");//데이터 전송
@@ -351,6 +359,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 } else
                     run();
                 flag = true;
+
             } catch (MalformedURLException | ProtocolException exception) {
                 noConfirm();
                 exception.printStackTrace();
@@ -489,7 +498,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
                 sendMsg = "HOUR=" + strings[0]+"&MINUTE="+strings[1]+"&SECOND="+strings[2]+"&MILISECOND="+strings[3];//보낼 정보
-                Log.i(sendMsg,sendMsg+"??????????????");
+                //Log.i(sendMsg,sendMsg+"??????????????");
                 osw.write(sendMsg);
                 osw.flush();
 
