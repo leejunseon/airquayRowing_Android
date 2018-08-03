@@ -32,9 +32,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StartingHutActivity extends AppCompatActivity {
-    private static final String URL_ADDRESS_TIMER_START = "http://192.168.254.167:8080/airquayRowing/main/setRaceStart";
-    private static final String URL_ADDRESS_TIME = "http://192.168.254.167:8080/airquayRowing/main/pastTimeSave";
-    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.167:8080/airquayRowing/main/getRaceNum";
+    private static final String URL_ADDRESS_TIMER_START = "http://192.168.1.79:8080/airquayRowing/main/setRaceStart";
+    private static final String URL_ADDRESS_TIME = "http://192.168.1.79:8080/airquayRowing/main/pastTimeSave";
+    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.1.79:8080/airquayRowing/main/setRaceNum";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
@@ -77,22 +77,25 @@ public class StartingHutActivity extends AppCompatActivity {
         data.setOnClickListener(new View.OnClickListener() //다음경기 버튼 눌렀을 때의 event
         {
             public void onClick(View view) {
-                try {
-                    CustomTask a = new CustomTask();
-                    a.setDate(raceDate.getText().toString());
-                    a.execute();
-                } catch (Exception e) {
-                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }
-                raceNum.setText(Integer.toString(tempNumber));
+
+                raceNum.setText(Integer.toString(++tempNumber));
                 raceState.setVisibility(View.INVISIBLE);
                 timerTime.setText(getReset());
                 twoMinutesButton.setEnabled(true);
                 goButton.setEnabled(false);
                 Finish_Button.setEnabled(false);
                 data.setEnabled(false);
+
+                try {
+                    CustomTask a = new CustomTask();
+                    //a.setDate(raceDate.getText().toString());
+                    a.setDate(Integer.toString(tempNumber));
+                    a.execute();
+                } catch (Exception e) {
+                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                    finish();
+                    e.printStackTrace();
+                }
 
             }
         });
@@ -312,7 +315,7 @@ public class StartingHutActivity extends AppCompatActivity {
         thread.start();
     }
 
-    class CustomTask extends AsyncTask<Void, String, Void>
+    class CustomTask extends AsyncTask<Void, String, Void>//racedate를 보내고 jsondata를 받아옴.
     {
         private String data;
         String sendMsg;
@@ -350,15 +353,17 @@ public class StartingHutActivity extends AppCompatActivity {
                     page += line;
                 }
 
+                /*  JSONObject 받는 부분
                 JSONObject sObject = new JSONObject(page);
                 JSONArray sArray = sObject.getJSONArray("dataSend");
                 sObject = sArray.getJSONObject(0);
                 if (sObject.getString("key").equals("ok")) {
                     LoadData = sObject.getString("key");
-                    tempNumber++;
+                    ///////////////////////////////////////////
                 } else
                     run();
                 flag = true;
+                */
 
             } catch (MalformedURLException | ProtocolException exception) {
                 noConfirm();
@@ -367,10 +372,10 @@ public class StartingHutActivity extends AppCompatActivity {
             } catch (IOException io) {
                 noConfirm();
                 io.printStackTrace();
-            } catch (JSONException e) {
+            } /*catch (JSONException e) {
                 noConfirm();
                 e.printStackTrace();
-            }
+            }*/
             return null;
 
         }
@@ -410,7 +415,7 @@ public class StartingHutActivity extends AppCompatActivity {
         }
     }
 
-    class TimerCaller extends AsyncTask<Void, Void, Void> //웹으로부터 시간정보 가져오는 AsyncTask
+    class TimerCaller extends AsyncTask<Void, Void, Void> //CheckOnOff 조작하는 클래스
     {
         private String sendMsg;
         private String data;
@@ -482,7 +487,7 @@ public class StartingHutActivity extends AppCompatActivity {
         }
     }
 
-    class TimeSender extends AsyncTask<String, Void, Void> //웹으로 시간정보 보내는 AsyncTask
+    class TimeSender extends AsyncTask<String, Void, Void> //타이머 멈췄을 때 멈춘 랩타임 보내는 클래스
     {
         private String sendMsg;
 
