@@ -83,7 +83,7 @@ public class StartingHutActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 try {
-                    getRaceNum RaceNum = new getRaceNum();
+                    getRaceNum RaceNum = new getRaceNum();//다음 경기 조회
                     RaceNum.setData(raceDate.getText().toString());
                     RaceNum.execute();
 
@@ -711,4 +711,5 @@ public class StartingHutActivity extends AppCompatActivity {
 
         };
     }
+
 }

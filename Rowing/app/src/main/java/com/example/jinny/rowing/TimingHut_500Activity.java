@@ -46,8 +46,10 @@ public class TimingHut_500Activity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://13.209.161.83:8080/start.jsp";
     private static final String URL_ADDRESS_TIME = "http://13.209.161.83:8080/pastTimeSave.jsp";
     private static final String URL_RECORD = "http://192.168.254.151:8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://192.168.254.151:8080/airquayRowing/main/updateRaceinfo";
     final static int IDLE = 0;
     final static int RUNNING = 1;
+    private ProgressDialog pDialog;
     File file = Environment.getRootDirectory();
     final String RECORDED_FILE = Environment.getExternalStorageDirectory().getAbsolutePath() + String.format("/recorded.mp4");
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -116,7 +118,16 @@ public class TimingHut_500Activity extends AppCompatActivity {
         for (int i = 0; i < 36; i++)
             bowNumSelectButton[i] = (Button) findViewById(buttonIds1[i]);//리스트 안의 숫자들
 
-
+        //경기정보 가져오는부분/////////////////////////////////////////////////////////////////////////////////
+        try {
+                updateRaceinfo b = new updateRaceinfo();
+                b.setData("1");
+                b.execute();
+        } catch (Exception e) {
+                Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                finish();
+                e.printStackTrace();
+        }
 
         pauseButton.setVisibility(View.INVISIBLE);//재생 정지버튼 일단 안보이게
 
@@ -550,7 +561,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
         }
     }
 
-
     class Uploader extends AsyncTask<String, Void, Void> {
         String sendMsg;
 
@@ -778,4 +788,112 @@ public class TimingHut_500Activity extends AppCompatActivity {
 
         };
     }
+
+    class updateRaceinfo extends AsyncTask<Void, String, Void>//경기정보 받아옴
+    {
+        private String data;
+        String sendMsg;
+
+        protected void onPreExecute() {
+            pDialog = new ProgressDialog(TimingHut_500Activity.this);
+            pDialog.setMessage("검색중입니다...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+            super.onPreExecute();
+        }
+
+        protected Void doInBackground(Void... param) {
+            try {
+                URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                conn.setRequestMethod("POST");//데이터 전송
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+                conn.setUseCaches(false);
+                conn.setDefaultUseCaches(false);
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                sendMsg = "raceDate=" + data;//보낼 정보
+                osw.write(sendMsg);
+                osw.flush();
+
+                conn.connect();
+                InputStream is = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                String line = "";
+                String page = "";
+
+                while ((line = reader.readLine()) != null) {
+                    page += line;
+                }
+
+                // JSONObject 받는 부분
+                JSONObject sObject = new JSONObject(page);
+                JSONArray sArray = sObject.getJSONArray("dataSend");
+                sObject = sArray.getJSONObject(0);
+                if (sObject.getString("key").equals("ok")) {
+                    LoadData = sObject.getString("key");
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+
+                        }
+                    });
+                } else {
+                    run();
+                }
+
+            } catch (MalformedURLException | ProtocolException exception) {
+                noConfirm();
+                exception.printStackTrace();
+                finish();
+            } catch (IOException io) {
+                noConfirm();
+                io.printStackTrace();
+            } catch (JSONException e) {
+                noConfirm();
+                e.printStackTrace();
+            }
+            return null;
+
+        }
+
+        public void noConfirm() {
+            confirmHandler.sendEmptyMessage(0);
+        }
+
+        private Handler confirmHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                Toast.makeText(TimingHut_500Activity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
+                super.handleMessage(msg);
+            }
+
+        };
+
+        private void run() {
+            handler.sendEmptyMessage(0);
+        }
+
+        private Handler handler = new Handler() {
+            public void handleMessage(Message msg) {
+                Toast.makeText(TimingHut_500Activity.this, "오늘 경기는 끝났습니다.", Toast.LENGTH_LONG).show();
+                confirmConnection.setBackground(getDrawable(R.drawable.connection_border));
+                super.handleMessage(msg);
+            }
+
+        };
+
+        protected void onPostExecute(Void aVoid) {
+            pDialog.dismiss();
+        }
+
+        private void setData(String data) {
+            this.data = data;
+        }
+
+    }
+
 }
