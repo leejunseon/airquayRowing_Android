@@ -45,6 +45,7 @@ import org.w3c.dom.Text;
 public class TimingHut_500Activity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://13.209.161.83:8080/start.jsp";
     private static final String URL_ADDRESS_TIME = "http://13.209.161.83:8080/pastTimeSave.jsp";
+    private static final String URL_RECORD = "http://192.168.254.151:8080/airquayRowing/main/recordUpload";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     File file = Environment.getRootDirectory();
@@ -192,10 +193,10 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "데이터 업로드 중입니다.", Toast.LENGTH_LONG).show();
                 try {
                     for (int i = 0; i < 6; i++) {
-                        TimingHut_500Activity.CustomTask a = new TimingHut_500Activity.CustomTask();
-                        String temp = bowNumButton[i].getText().toString();
+                        CustomTask a = new CustomTask();
+                        int temp = Integer.parseInt(bowNumButton[i].getText().toString());//temp = bow_num
                         String[] timeTemp = records[i].split(":|[.]");//웹에 넘길 때 "00:00:00.00" 이런 포맷은 특수문자 때문에 넘어가지 않아 시, 분, 초, 밀리초 로 다 나눔
-                        a.setData(Integer.parseInt(temp), raceNum1);
+                        a.setData(temp, raceNum1,i+1);
                         a.execute(hutPosition, timeTemp[0], timeTemp[1], timeTemp[2], timeTemp[3]);
                     }
                 } catch (Exception e) {
@@ -322,7 +323,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
         //스톱워치 랩 기능 구현
         switch (v.getId()) {
             case R.id.hut_go_button:
-                try {
+              /*  try {
                     TimerCaller b = new TimerCaller();
                     b.setDate("1");
                     b.execute();
@@ -330,7 +331,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
-                }
+                }*/
                 hBaseTime = SystemClock.elapsedRealtime();
                 lTimer.sendEmptyMessage(0);
                 lStatus = RUNNING;
@@ -369,7 +370,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 }
                 break;
             case R.id.stop_button:
-                try {
+                /*try {
                     TimerCaller b = new TimerCaller();
                     b.setDate("0");
                     b.execute();
@@ -377,13 +378,14 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
-                }
+                }*/
                 raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.end_state_border));
                 raceState.setText(" 경기 종료 ");
                 lTimer.removeMessages(0);
                 hPauseTime = SystemClock.elapsedRealtime();
                 lStatus = IDLE;
-                pastTime = ongoingTime.getText().toString();
+
+               /* pastTime = ongoingTime.getText().toString();
                 String[] timeTemp = pastTime.split(":|[.]");
                 try {
                     TimeSender e = new TimeSender();
@@ -392,7 +394,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
-                }
+                }*/
                 break;
         }
         records[0] = firstRecord.getText().toString();
@@ -483,13 +485,16 @@ public class TimingHut_500Activity extends AppCompatActivity {
     }
 
 
+
+
+
     class CustomTask extends AsyncTask<String, Void, Void> {
-        private int raceNum2, bowNum;
+        private int raceNum2, bowNum, rank;
         String sendMsg;
 
         protected Void doInBackground(String... strings) {
             try {
-                URL url = new URL("http://13.209.161.83:8080/record.jsp");//보낼 jsp 주소
+                URL url = new URL(URL_RECORD);//보낼 jsp 주소
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");//데이터 전송
@@ -498,7 +503,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "HUT=" + strings[0] + "&HOUR=" + strings[1] + "&MINUTE=" + strings[2] + "&SECOND=" + strings[3] + "&MILISECOND=" + strings[4] + "&BOWNUM=" + bowNum + "&RACENUM=" + raceNum2;//보낼 정보
+                sendMsg = "HUT=" + strings[0] + "&HOUR=" + strings[1] + "&MINUTE=" + strings[2] + "&SECOND=" + strings[3] + "&MILISECOND=" + strings[4] + "&BOWNUM=" + bowNum + "&RACENUM=" + raceNum2 + "&RANK="+rank;//보낼 정보
                 osw.write(sendMsg);
                 osw.flush();
 
@@ -538,11 +543,13 @@ public class TimingHut_500Activity extends AppCompatActivity {
 
         };
 
-        private void setData(int bowNum, int raceNum) {
+        private void setData(int bowNum, int raceNum,int rank) {
             this.bowNum = bowNum;
             this.raceNum2 = raceNum;
+            this.rank=rank;
         }
     }
+
 
     class Uploader extends AsyncTask<String, Void, Void> {
         String sendMsg;

@@ -32,9 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StartingHutActivity extends AppCompatActivity {
-    private static final String URL_ADDRESS_TIMER_START = "http://192.168.1.79:8080/airquayRowing/main/setRaceStart";
-    private static final String URL_ADDRESS_TIME = "http://192.168.1.79:8080/airquayRowing/main/pastTimeSave";
-    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.1.79:8080/airquayRowing/main/setRaceNum";
+    private static final String URL_ADDRESS_SET_ONOFF = "http://192.168.254.151:8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
+    private static final String URL_ADDRESS_STOPTIME = "http://192.168.254.151:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
+    private static final String URL_ADDRESS_STARTTIME="http://192.168.254.151:8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
+    private static final String URL_ADDRESS_FINISHTIME="http://192.168.254.151:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
+    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.151:8080/airquayRowing/main/getRaceNum";//경기 유무 확인
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
@@ -46,6 +48,7 @@ public class StartingHutActivity extends AppCompatActivity {
     int tStatus = IDLE;
     int tempNumber = 1;
     String LoadData, pastTime;
+    String[] timeTemp,timeSplit;
     boolean flag;
     private ProgressDialog pDialog;
 
@@ -74,29 +77,27 @@ public class StartingHutActivity extends AppCompatActivity {
 
         data = (Button) findViewById(R.id.sendData);//다음 경기
         data.setEnabled(false);
+
         data.setOnClickListener(new View.OnClickListener() //다음경기 버튼 눌렀을 때의 event
         {
             public void onClick(View view) {
 
-                raceNum.setText(Integer.toString(++tempNumber));
-                raceState.setVisibility(View.INVISIBLE);
-                timerTime.setText(getReset());
-                twoMinutesButton.setEnabled(true);
-                goButton.setEnabled(false);
-                Finish_Button.setEnabled(false);
-                data.setEnabled(false);
-
                 try {
-                    CustomTask a = new CustomTask();
-                    //a.setDate(raceDate.getText().toString());
-                    a.setDate(Integer.toString(tempNumber));
-                    a.execute();
+                    getRaceNum RaceNum = new getRaceNum();
+                    RaceNum.setData(raceDate.getText().toString());
+                    RaceNum.execute();
+
+                    raceState.setVisibility(View.INVISIBLE);
+                    timerTime.setText(getReset());
+                    twoMinutesButton.setEnabled(true);
+                    goButton.setEnabled(false);
+                    Finish_Button.setEnabled(false);
+                    data.setEnabled(false);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
                 }
-
             }
         });
     }
@@ -122,17 +123,18 @@ public class StartingHutActivity extends AppCompatActivity {
             case R.id.go_button://시작버튼 누를 때
                 switch (tStatus)
                 {
-                    case IDLE://2분전 상태
+                    case IDLE://2분전 상태 -> start
 
                         try {
-                            TimerCaller b = new TimerCaller();
-                            b.setDate("1");
-                            b.execute();
+                            StartTimeSender startTimeSend = new StartTimeSender();
+                            startTimeSend.setData(currentTime.getText().toString());
+                            startTimeSend.execute();
                         } catch (Exception e) {
                             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                             finish();
                             e.printStackTrace();
                         }
+
                         Toast.makeText(getApplicationContext(), "완료되었습니다.", Toast.LENGTH_LONG).show();
                         raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.ongoing_state_border));
                         raceState.setText(" 경기중 ");
@@ -143,14 +145,15 @@ public class StartingHutActivity extends AppCompatActivity {
                         goButton.setText(" False ");
                         tStatus = RUNNING;
                         Log.i("IDLE", "IDLE");
+
                         break;
 
-                    case RUNNING://경기중 상태
+                    case RUNNING://경기중 상태 -> false start
 
                         try {
-                            TimerCaller c = new TimerCaller();
-                            c.setDate("3");
-                            c.execute();
+                            SetOnOff falseStart = new SetOnOff();
+                            falseStart.setData("3");
+                            falseStart.execute();
                         } catch (Exception e) {
                             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                             finish();
@@ -158,12 +161,12 @@ public class StartingHutActivity extends AppCompatActivity {
                         }
 
                         pastTime=timerTime.getText().toString();
-                        String[] timeTemp=pastTime.split(":|[.]");
+                        timeTemp=pastTime.split(":|[.]");
                         Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
-                        String[] timeSplit=timeTemp[2].split(".");
+                        timeSplit=timeTemp[2].split(".");
                         try {
-                            TimeSender e = new TimeSender();
-                            e.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
+                            StopTimeSender falseTimeSender = new StopTimeSender();
+                            falseTimeSender.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
                         } catch (Exception e) {
                             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                             finish();
@@ -181,16 +184,18 @@ public class StartingHutActivity extends AppCompatActivity {
                         Log.i("RUNNING", "RUNNING");
                         break;
 
-                    case PAUSE://FalseStart 상태
+                    case PAUSE://FalseStart 상태 -> restart
+
                         try {
-                            TimerCaller c = new TimerCaller();
-                            c.setDate("1");
-                            c.execute();
+                            StartTimeSender restartTimeSend = new StartTimeSender();
+                            restartTimeSend.setData(currentTime.getText().toString());
+                            restartTimeSend.execute();
                         } catch (Exception e) {
                             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                             finish();
                             e.printStackTrace();
                         }
+
                         long now = SystemClock.elapsedRealtime();
                         baseTime = (now);
                         mTimer.sendEmptyMessage(0);
@@ -208,14 +213,15 @@ public class StartingHutActivity extends AppCompatActivity {
             case R.id.two_minute_button://2분전버튼 누를 때
 
                 try {
-                    TimerCaller c = new TimerCaller();
-                    c.setDate("2");
-                    c.execute();
+                    SetOnOff twominutes = new SetOnOff();
+                    twominutes.setData("2");
+                    twominutes.execute();
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
                 }
+
                 goButton.setEnabled(true);
                 raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.two_minutes_state_border));
                 raceState.setText(" 2 분전 ");
@@ -225,9 +231,9 @@ public class StartingHutActivity extends AppCompatActivity {
             case R.id.Finish_button://종료버튼 누를 때
 
                 try {
-                    TimerCaller d = new TimerCaller();
-                    d.setDate("0");
-                    d.execute();
+                    FinishTimeSender finish = new FinishTimeSender();
+                    finish.setData(currentTime.getText().toString());
+                    finish.execute();
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
@@ -239,8 +245,8 @@ public class StartingHutActivity extends AppCompatActivity {
                 Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
                 String[] timeSplit=timeTemp[2].split(".");
                 try {
-                    TimeSender e = new TimeSender();
-                    e.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
+                    StopTimeSender finishTimeSender = new StopTimeSender();
+                    finishTimeSender.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
@@ -262,9 +268,9 @@ public class StartingHutActivity extends AppCompatActivity {
             case R.id.Reset_Button://Reset버튼 누를 때
 
                 try {
-                    TimerCaller d = new TimerCaller();
-                    d.setDate("4");
-                    d.execute();
+                    SetOnOff Reset = new SetOnOff();
+                    Reset.setData("4");
+                    Reset.execute();
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
@@ -275,6 +281,9 @@ public class StartingHutActivity extends AppCompatActivity {
 
         }
     }
+
+
+
 
     String getElapse()
     {
@@ -315,7 +324,13 @@ public class StartingHutActivity extends AppCompatActivity {
         thread.start();
     }
 
-    class CustomTask extends AsyncTask<Void, String, Void>//racedate를 보내고 jsondata를 받아옴.
+
+
+
+
+
+
+    class getRaceNum extends AsyncTask<Void, String, Void>//다음 경기 유무 확인
     {
         private String data;
         String sendMsg;
@@ -339,7 +354,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "raceDate=" + data;//보낼 정보
+                sendMsg = "raceDate=" + data+"&raceNum="+(tempNumber+1);//보낼 정보
                 osw.write(sendMsg);
                 osw.flush();
 
@@ -353,17 +368,24 @@ public class StartingHutActivity extends AppCompatActivity {
                     page += line;
                 }
 
-                /*  JSONObject 받는 부분
+                // JSONObject 받는 부분
                 JSONObject sObject = new JSONObject(page);
                 JSONArray sArray = sObject.getJSONArray("dataSend");
                 sObject = sArray.getJSONObject(0);
                 if (sObject.getString("key").equals("ok")) {
                     LoadData = sObject.getString("key");
-                    ///////////////////////////////////////////
-                } else
-                    run();
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            raceNum.setText(Integer.toString(++tempNumber));
+                        }
+                    });
+                } else {
+                   run();
+                }
                 flag = true;
-                */
 
             } catch (MalformedURLException | ProtocolException exception) {
                 noConfirm();
@@ -372,10 +394,10 @@ public class StartingHutActivity extends AppCompatActivity {
             } catch (IOException io) {
                 noConfirm();
                 io.printStackTrace();
-            } /*catch (JSONException e) {
+            } catch (JSONException e) {
                 noConfirm();
                 e.printStackTrace();
-            }*/
+            }
             return null;
 
         }
@@ -410,12 +432,14 @@ public class StartingHutActivity extends AppCompatActivity {
             pDialog.dismiss();
         }
 
-        private void setDate(String date) {
-            this.data = date;
+        private void setData(String data) {
+            this.data = data;
         }
+
     }
 
-    class TimerCaller extends AsyncTask<Void, Void, Void> //CheckOnOff 조작하는 클래스
+
+    class StartTimeSender extends AsyncTask<Void, Void, Void> //시작 랩 타임 전송
     {
         private String sendMsg;
         private String data;
@@ -431,7 +455,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
         protected Void doInBackground(Void... param) {
             try {
-                URL url = new URL(URL_ADDRESS_TIMER_START); // URL클래스의 생성자로 주소를 넘겨준다.
+                URL url = new URL(URL_ADDRESS_STARTTIME); // URL클래스의 생성자로 주소를 넘겨준다.
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection(); // 해당 주소의 페이지로 접속을 하고, 단일 HTTP 접속을 하기위해 캐스트한다.
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // 요청 헤더를 정의한다.
                 conn.setRequestMethod("POST");//데이터 전송(POST방식)
@@ -440,7 +464,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "raceDate=" + data;//보낼 정보
+                sendMsg = "start_time=" + data+"&race_num="+Integer.toString(tempNumber)+"&OnOff=1";//보낼 정보(OnOff, raceNum)
                 osw.write(sendMsg);
                 osw.flush();
 
@@ -482,18 +506,165 @@ public class StartingHutActivity extends AppCompatActivity {
 
         };
 
-        private void setDate(String date) {
-            this.data = date;
+        private void setData(String data) {
+            this.data = data;
         }
     }
 
-    class TimeSender extends AsyncTask<String, Void, Void> //타이머 멈췄을 때 멈춘 랩타임 보내는 클래스
+
+    class FinishTimeSender extends AsyncTask<Void, Void, Void> //종료 랩 타임 전송
+    {
+        private String sendMsg;
+        private String data;
+
+        protected void onPreExecute() {
+
+            pDialog = new ProgressDialog(StartingHutActivity.this);
+            pDialog.setMessage("검색중입니다...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+            super.onPreExecute();
+        }
+
+        protected Void doInBackground(Void... param) {
+            try {
+                URL url = new URL(URL_ADDRESS_FINISHTIME); // URL클래스의 생성자로 주소를 넘겨준다.
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection(); // 해당 주소의 페이지로 접속을 하고, 단일 HTTP 접속을 하기위해 캐스트한다.
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // 요청 헤더를 정의한다.
+                conn.setRequestMethod("POST");//데이터 전송(POST방식)
+                conn.setDoOutput(true); // OutputStream으로 POST 데이터를 넘겨주겠다는 옵션을 정의한다.
+                conn.setDoInput(true); // IputStream으로 응답 헤더와 메시지를 읽어들이겠다는 옵션을 정의한다.
+                conn.setUseCaches(false);
+                conn.setDefaultUseCaches(false);
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                sendMsg = "stop_time=" + data+"&race_num="+Integer.toString(tempNumber)+"&OnOff=0";//보낼 정보(OnOff, raceNum)
+                osw.write(sendMsg);
+                osw.flush();
+
+                conn.connect();
+                InputStream is = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // 응답받은 메시지의 길이만큼 버퍼를 생성하여 읽어들이고, "UTF-8"로 디코딩해서 읽어들인다
+                String line = "";
+                String page = "";
+
+                while ((line = reader.readLine()) != null) {
+                    page += line;
+                }
+
+            } catch (MalformedURLException | ProtocolException exception) {
+                noConfirm();
+                exception.printStackTrace();
+                finish();
+            } catch (IOException io) {
+                noConfirm();
+                io.printStackTrace();
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Void aVoid) {
+            pDialog.dismiss();
+        }
+
+        public void noConfirm() {
+            confirmHandler.sendEmptyMessage(0);
+        }
+
+        private Handler confirmHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                Toast.makeText(StartingHutActivity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
+                super.handleMessage(msg);
+            }
+
+        };
+
+        private void setData(String data) {
+            this.data = data;
+        }
+    }
+
+
+    class SetOnOff extends AsyncTask<Void, Void, Void> //Onoff 조작
+    {
+        private String sendMsg;
+        private String data;
+
+        protected void onPreExecute() {
+
+            pDialog = new ProgressDialog(StartingHutActivity.this);
+            pDialog.setMessage("검색중입니다...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+            super.onPreExecute();
+        }
+
+        protected Void doInBackground(Void... param) {
+            try {
+                URL url = new URL(URL_ADDRESS_SET_ONOFF); // URL클래스의 생성자로 주소를 넘겨준다.
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection(); // 해당 주소의 페이지로 접속을 하고, 단일 HTTP 접속을 하기위해 캐스트한다.
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // 요청 헤더를 정의한다.
+                conn.setRequestMethod("POST");//데이터 전송(POST방식)
+                conn.setDoOutput(true); // OutputStream으로 POST 데이터를 넘겨주겠다는 옵션을 정의한다.
+                conn.setDoInput(true); // IputStream으로 응답 헤더와 메시지를 읽어들이겠다는 옵션을 정의한다.
+                conn.setUseCaches(false);
+                conn.setDefaultUseCaches(false);
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                sendMsg = "OnOff=" + data+"&raceNum="+Integer.toString(tempNumber);//보낼 정보(OnOff, raceNum)
+                osw.write(sendMsg);
+                osw.flush();
+
+                conn.connect();
+                InputStream is = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // 응답받은 메시지의 길이만큼 버퍼를 생성하여 읽어들이고, "UTF-8"로 디코딩해서 읽어들인다
+                String line = "";
+                String page = "";
+
+                while ((line = reader.readLine()) != null) {
+                    page += line;
+                }
+
+            } catch (MalformedURLException | ProtocolException exception) {
+                noConfirm();
+                exception.printStackTrace();
+                finish();
+            } catch (IOException io) {
+                noConfirm();
+                io.printStackTrace();
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Void aVoid) {
+            pDialog.dismiss();
+        }
+
+        public void noConfirm() {
+            confirmHandler.sendEmptyMessage(0);
+        }
+
+        private Handler confirmHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                Toast.makeText(StartingHutActivity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
+                super.handleMessage(msg);
+            }
+
+        };
+
+        private void setData(String data) {
+            this.data = data;
+        }
+    }
+
+
+    class StopTimeSender extends AsyncTask<String, Void, Void> //타이머 멈췄을 때 멈춘 랩타임 시간 형식으로 전송
     {
         private String sendMsg;
 
         protected Void doInBackground(String... strings) {
             try {
-                URL url = new URL(URL_ADDRESS_TIME);
+                URL url = new URL(URL_ADDRESS_STOPTIME);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");//데이터 전송
@@ -502,8 +673,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "HOUR=" + strings[0]+"&MINUTE="+strings[1]+"&SECOND="+strings[2]+"&MILISECOND="+strings[3];//보낼 정보
-                //Log.i(sendMsg,sendMsg+"??????????????");
+                sendMsg = "HOUR=" + strings[0]+"&MINUTE="+strings[1]+"&SECOND="+strings[2]+"&MILISECOND="+strings[3]+"&raceNum="+tempNumber;//보낼 정보
                 osw.write(sendMsg);
                 osw.flush();
 
