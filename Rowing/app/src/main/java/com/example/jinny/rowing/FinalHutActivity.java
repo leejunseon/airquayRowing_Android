@@ -45,7 +45,7 @@ import org.w3c.dom.Text;
 public class FinalHutActivity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://13.209.161.83:8080/start.jsp";
     private static final String URL_ADDRESS_TIME = "http://13.209.161.83:8080/pastTimeSave.jsp";
-    private static final String URL_RECORD = "http://192.168.254.151:8080/airquayRowing/main/recordUpload";
+    private static final String URL_RECORD = "http://172.30.1.14:8080/airquayRowing/main/recordUpload";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     File file = Environment.getRootDirectory();

@@ -32,11 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StartingHutActivity extends AppCompatActivity {
-    private static final String URL_ADDRESS_SET_ONOFF = "http://192.168.254.151:8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
-    private static final String URL_ADDRESS_STOPTIME = "http://192.168.254.151:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
-    private static final String URL_ADDRESS_STARTTIME="http://192.168.254.151:8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
-    private static final String URL_ADDRESS_FINISHTIME="http://192.168.254.151:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
-    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.151:8080/airquayRowing/main/getRaceNum";//경기 유무 확인
+    private static final String URL_ADDRESS_SET_ONOFF = "http://172.30.1.14:8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
+    private static final String URL_ADDRESS_STOPTIME = "http://172.30.1.14:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
+    private static final String URL_ADDRESS_STARTTIME="http://172.30.1.14:8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
+    private static final String URL_ADDRESS_FINISHTIME="http://172.30.1.14:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
+    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://172.30.1.14:8080/airquayRowing/main/getRaceNum";//경기 유무 확인
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;

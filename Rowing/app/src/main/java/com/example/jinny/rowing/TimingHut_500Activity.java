@@ -45,8 +45,8 @@ import org.w3c.dom.Text;
 public class TimingHut_500Activity extends AppCompatActivity {
     private static final String URL_ADDRESS_TIMER_START = "http://13.209.161.83:8080/start.jsp";
     private static final String URL_ADDRESS_TIME = "http://13.209.161.83:8080/pastTimeSave.jsp";
-    private static final String URL_RECORD = "http://192.168.254.151:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://192.168.254.151:8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_RECORD = "http://172.30.1.14:8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://172.30.1.14:8080/airquayRowing/main/updateRaceinfo";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -76,7 +76,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String LoadData, checker = "null";
+    String  Onoff, race_num, StartTime, checker = "null";
     private TimerTask mTask;
     private Timer mTimer;
 
@@ -118,16 +118,19 @@ public class TimingHut_500Activity extends AppCompatActivity {
         for (int i = 0; i < 36; i++)
             bowNumSelectButton[i] = (Button) findViewById(buttonIds1[i]);//리스트 안의 숫자들
 
-        //경기정보 가져오는부분/////////////////////////////////////////////////////////////////////////////////
+        showTime();//현재 시간과 날짜 출력하는 함수
+
+        //진행중인 경기정보 가져오고 UI 세팅
         try {
                 updateRaceinfo b = new updateRaceinfo();
-                b.setData("1");
+                b.setData(dateFormat.format(new Date()));
                 b.execute();
         } catch (Exception e) {
                 Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                 finish();
                 e.printStackTrace();
         }
+
 
         pauseButton.setVisibility(View.INVISIBLE);//재생 정지버튼 일단 안보이게
 
@@ -247,7 +250,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 }
             }
         });
-        showTime();//현재 시간과 날짜 출력하는 함수
         //mHandler.sendEmptyMessage(0);
     }
 
@@ -830,20 +832,58 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 // JSONObject 받는 부분
                 JSONObject sObject = new JSONObject(page);
                 JSONArray sArray = sObject.getJSONArray("dataSend");
+
+                //경기번호
                 sObject = sArray.getJSONObject(0);
-                if (sObject.getString("key").equals("ok")) {
-                    LoadData = sObject.getString("key");
+                race_num=sObject.getString("race_num");
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        raceNumber.setText(race_num);
+                    }
+                });
+
+                //경기 상태
+                sObject=sArray.getJSONObject(1);
+                Onoff=sObject.getString("Onoff");
+                if (Onoff.equals("0")) {
                     runOnUiThread(new Runnable()
                     {
                         @Override
-                        public void run()
-                        {
-
+                        public void run() {
+                            raceState.setText(" 경기 종료 ");
                         }
                     });
-                } else {
+                } else if(Onoff.equals("1")) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            raceState.setText(" 경기중 ");
+                        }
+                    });
+                }else if(Onoff.equals("2")) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            raceState.setText(" 2분전 ");
+                        }
+                    });
+                }else if(Onoff.equals("3")) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ////
+                        }
+                    });
+                }else {
                     run();
                 }
+
+                //시작시간
+                sObject = sArray.getJSONObject(2);
+                StartTime=sObject.getString("StartTime");
 
             } catch (MalformedURLException | ProtocolException exception) {
                 noConfirm();
