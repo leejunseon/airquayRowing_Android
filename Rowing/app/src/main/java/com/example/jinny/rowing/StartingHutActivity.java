@@ -162,7 +162,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
                         pastTime=timerTime.getText().toString();
                         timeTemp=pastTime.split(":|[.]");
-                        Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
+                       // Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
                         timeSplit=timeTemp[2].split(".");
                         try {
                             StopTimeSender falseTimeSender = new StopTimeSender();
