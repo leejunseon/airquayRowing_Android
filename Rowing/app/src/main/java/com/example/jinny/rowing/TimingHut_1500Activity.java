@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -43,10 +44,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 public class TimingHut_1500Activity extends AppCompatActivity {
-    private static final String URL_ADDRESS_TIMER_START = "http://13.209.161.83:8080/start.jsp";
-    private static final String URL_ADDRESS_TIME = "http://13.209.161.83:8080/pastTimeSave.jsp";
-    private static final String URL_RECORD = "http://172.30.1.14:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://172.30.1.14:8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_RECORD = "http://192.168.254.171:8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://192.168.254.171:8080/airquayRowing/main/updateRaceinfo";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -72,13 +71,13 @@ public class TimingHut_1500Activity extends AppCompatActivity {
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
-    int lStatus = IDLE;
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
     String  Onoff, race_num, StartTime, checker = "null";
     private TimerTask mTask;
     private Timer mTimer;
+    String hEll;
 
     MediaPlayer player = null;
     MediaRecorder recorder = null;
@@ -86,13 +85,12 @@ public class TimingHut_1500Activity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_timinghut_500);
+        setContentView(R.layout.activity_timinghut_1500);
         currentDate = (TextView) findViewById(R.id.current_date);//날짜
         currentTime = (TextView) findViewById(R.id.current_time);//시간
         ongoingTime = (TextView) findViewById(R.id.hut_ongoing_time);//시작하고나서부터의 시간
         raceNumber = (TextView) findViewById(R.id.hut_race_num);//몇 번 경기
         lapButton = (Button) findViewById(R.id.lap_button);//랩 버튼
-        stopButton = (ImageButton) findViewById(R.id.stop_button);//STOP 버튼
         firstRecord = (TextView) findViewById(R.id.first_record);//첫번째 기록
         secondRecord = (TextView) findViewById(R.id.second_record);//두번째 기록
         thirdRecord = (TextView) findViewById(R.id.third_record);//세번째 기록
@@ -110,7 +108,6 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         stringRaceNum = raceNumber.getText().toString();//몇번 경기 문자열
         raceState=(TextView) findViewById(R.id.hut_race_state);//경기중 표시 공간
         raceNum1 = Integer.parseInt(stringRaceNum);//몇번 경기 int 형
-        goButton = (Button) findViewById(R.id.hut_go_button);//시작 버튼
         for (int i = 0; i < 6; i++) {
             bowNumButton[i] = (Button) findViewById(buttonIds2[i]);//기록 옆에 노란 버튼
             dropMenu[i] = (LinearLayout) findViewById(menuIds[i]);//노란버튼 누르고 나서 나오는 숫자 리스트
@@ -124,7 +121,8 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         try {
             updateRaceinfo b = new updateRaceinfo();
             b.setData(dateFormat.format(new Date()));
-            b.execute();
+            b.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
         } catch (Exception e) {
             Toast.makeText(TimingHut_1500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
             finish();
@@ -219,18 +217,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 Toast.makeText(getApplicationContext(), "완료되었습니다.", Toast.LENGTH_LONG).show();
-        /*        try {
-                    for (int i = 0; i < 6; i++) {
-                        TimingHutActivity.Uploader a = new TimingHutActivity.Uploader();
-                        String temp = bowNumButton[i].getText().toString();
-                        a.execute(stringRaceNum, stringPosition);
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(TimingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }
-                */
+
             }
         });
 
@@ -250,30 +237,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
                 }
             }
         });
-        //mHandler.sendEmptyMessage(0);
     }
-
-    /*private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            try {
-                TimerIsOn b = new TimerIsOn();
-                b.execute();
-                Log.i(checker,checker+"췌커가 여기서 시작도ㅣㄱㄴ하지? ");
-                TimerCaller a = new TimerCaller();
-                a.setDate(checker);
-                a.execute();
-                Log.i(checker,checker+"췌커는 여기란다 ");
-                mHandler.sendEmptyMessageDelayed(0,1000);
-            } catch (Exception e) {
-                Toast.makeText(TimingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                finish();
-                e.printStackTrace();
-            }
-
-        }
-    };
-*/
 
     private void playAudio(String url) throws Exception {
         //오디오 재생
@@ -309,7 +273,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1500);
                     } catch (InterruptedException e) {
                     }
                     handler.sendEmptyMessage(2);
@@ -320,94 +284,35 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         thread.start();//스레드 시작
     }
 
-    Handler lTimer = new Handler() {
-        public void handleMessage(Message msg) {
-            ongoingTime.setText(getHutEllapse());
-            lTimer.sendEmptyMessage(0);
-        }
-    };
-
-    protected void onDestroy() {
-        lTimer.removeMessages(0);
-        super.onDestroy();
-    }
-
     public void hutOnClick(View v) {
         //스톱워치 랩 기능 구현
-        switch (v.getId()) {
-            case R.id.hut_go_button:
-              /*  try {
-                    TimerCaller b = new TimerCaller();
-                    b.setDate("1");
-                    b.execute();
-                } catch (Exception e) {
-                    Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }*/
-                hBaseTime = SystemClock.elapsedRealtime();
-                lTimer.sendEmptyMessage(0);
-                lStatus = RUNNING;
-                lapButton.setEnabled(true);
-                goButton.setVisibility(View.INVISIBLE);
+        String split = ongoingTime.getText().toString();
+        switch (splitCount) {
+            case 1:
+                firstRecord.setText(split);
+                splitCount++;
                 break;
-            case R.id.lap_button:
-                String split = String.format("%s", getHutEllapse());
-                switch (splitCount) {
-                    case 1:
-                        firstRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 2:
-                        secondRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 3:
-                        thirdRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 4:
-                        fourthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 5:
-                        fifthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 6:
-                        sixthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    default:
-                        break;
-                }
+            case 2:
+                secondRecord.setText(split);
+                splitCount++;
                 break;
-            case R.id.stop_button:
-                /*try {
-                    TimerCaller b = new TimerCaller();
-                    b.setDate("0");
-                    b.execute();
-                } catch (Exception e) {
-                    Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }*/
-                raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.end_state_border));
-                raceState.setText(" 경기 종료 ");
-                lTimer.removeMessages(0);
-                hPauseTime = SystemClock.elapsedRealtime();
-                lStatus = IDLE;
-
-               /* pastTime = ongoingTime.getText().toString();
-                String[] timeTemp = pastTime.split(":|[.]");
-                try {
-                    TimeSender e = new TimeSender();
-                    e.execute(timeTemp[0], timeTemp[1], timeTemp[2], timeTemp[3]);
-                } catch (Exception e) {
-                    Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }*/
+            case 3:
+                thirdRecord.setText(split);
+                splitCount++;
+                break;
+            case 4:
+                fourthRecord.setText(split);
+                splitCount++;
+                break;
+            case 5:
+                fifthRecord.setText(split);
+                splitCount++;
+                break;
+            case 6:
+                sixthRecord.setText(split);
+                splitCount++;
+                break;
+            default:
                 break;
         }
         records[0] = firstRecord.getText().toString();
@@ -416,13 +321,6 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         records[3] = fourthRecord.getText().toString();
         records[4] = fifthRecord.getText().toString();
         records[5] = sixthRecord.getText().toString();
-    }
-
-    String getHutEllapse() {
-        long now = SystemClock.elapsedRealtime();
-        long ell = now - hBaseTime;
-        String hEll = String.format("%02d:%02d:%02d.%02d", ell / 1000 / 360, ell / 1000 / 60, (ell / 1000) % 60, (ell % 1000) / 10);
-        return hEll;
     }
 
     //노란버튼 눌렀을 때, 리스트 꺼내는 메소드
@@ -563,341 +461,83 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         }
     }
 
-    class Uploader extends AsyncTask<String, Void, Void> {
-        String sendMsg;
-
-        protected Void doInBackground(String... strings) {
-            try {
-                URL url = new URL("http://13.209.161.83:8080/webRecord.jsp");//보낼 jsp 주소
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");//데이터 전송
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setDefaultUseCaches(false);
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "RACE=" + strings[0] + "&HUT=" + strings[1];//보낼 정보
-                osw.write(sendMsg);
-                osw.flush();
-
-                conn.connect();
-                InputStream is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String line = "";
-                String page = "";
-
-                while ((line = reader.readLine()) != null) {
-                    page += line;
-                }
-
-            } catch (MalformedURLException | ProtocolException exception) {
-                noConfirm();
-                exception.printStackTrace();
-                finish();
-            } catch (IOException io) {
-                noConfirm();
-                io.printStackTrace();
-            }
-            return null;
-
-        }
-
-        public void noConfirm() {
-            confirmHandler.sendEmptyMessage(0);
-        }
-
-        private Handler confirmHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                Toast.makeText(TimingHut_1500Activity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
-                super.handleMessage(msg);
-            }
-
-        };
-    }
-
-    class TimerCaller extends AsyncTask<Void, Void, Void> {
-        private String sendMsg;
-        private String data;
-
-        protected Void doInBackground(Void... param) {
-            try {
-                URL url = new URL(URL_ADDRESS_TIMER_START);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");//데이터 전송
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setDefaultUseCaches(false);
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "raceDate=" + data;//보낼 정보
-                osw.write(sendMsg);
-                osw.flush();
-
-                conn.connect();
-                InputStream is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String line = "";
-                String page = "";
-
-                while ((line = reader.readLine()) != null) {
-                    page += line;
-                }
-
-            } catch (MalformedURLException | ProtocolException exception) {
-                noConfirm();
-                exception.printStackTrace();
-                finish();
-            } catch (IOException io) {
-                noConfirm();
-                io.printStackTrace();
-            }
-            return null;
-        }
-
-        public void noConfirm() {
-            confirmHandler.sendEmptyMessage(0);
-        }
-
-        private Handler confirmHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                Toast.makeText(TimingHut_1500Activity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
-                super.handleMessage(msg);
-            }
-        };
-
-        private void setDate(String date) {
-            this.data = date;
-        }
-    }
-
-    class TimeSender extends AsyncTask<String, Void, Void> {
-        private String sendMsg;
-
-        protected Void doInBackground(String... strings) {
-            try {
-                URL url = new URL(URL_ADDRESS_TIME);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");//데이터 전송
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setDefaultUseCaches(false);
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "HOUR=" + strings[0] + "&MINUTE=" + strings[1] + "&SECOND=" + strings[2] + "&MILISECOND=" + strings[3];//보낼 정보
-                osw.write(sendMsg);
-                osw.flush();
-
-                conn.connect();
-                InputStream is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String line = "";
-                String page = "";
-
-                while ((line = reader.readLine()) != null) {
-                    page += line;
-                }
-
-            } catch (MalformedURLException | ProtocolException exception) {
-                noConfirm();
-                exception.printStackTrace();
-                finish();
-            } catch (IOException io) {
-                noConfirm();
-                io.printStackTrace();
-            }
-            return null;
-        }
-
-        public void noConfirm() {
-            confirmHandler.sendEmptyMessage(0);
-        }
-
-
-        private Handler confirmHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                Toast.makeText(TimingHut_1500Activity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
-                super.handleMessage(msg);
-            }
-
-        };
-    }
-
-    class TimerIsOn extends AsyncTask<Void, String, String> {
-
-        protected String doInBackground(Void... param) {
-            try {
-                URL url = new URL("http://13.209.161.83:8080/hutTimerIsOn.jsp");//보낼 jsp 주소
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");//데이터 전송
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setDefaultUseCaches(false);
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                osw.flush();
-
-                conn.connect();
-                InputStream is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String line = "";
-                String page = "";
-
-                while ((line = reader.readLine()) != null) {
-                    page += line;
-                }
-
-                JSONObject sObject = new JSONObject(page);
-                JSONArray sArray = sObject.getJSONArray("dataSend");
-                sObject = sArray.getJSONObject(0);
-                if (sObject.getString("key").equals("on")) {
-                    checker = "1";
-                } else {
-                    checker = "0";
-                }
-
-            } catch (MalformedURLException | ProtocolException exception) {
-                noConfirm();
-                exception.printStackTrace();
-                finish();
-            } catch (IOException io) {
-                noConfirm();
-                io.printStackTrace();
-            } catch (JSONException e) {
-                noConfirm();
-                e.printStackTrace();
-            }
-            return checker;
-
-        }
-
-        public void noConfirm() {
-            confirmHandler.sendEmptyMessage(0);
-        }
-
-        private Handler confirmHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                Toast.makeText(TimingHut_1500Activity.this, "서버가 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                confirmConnection.setBackground(getDrawable(R.drawable.not_connected));
-                super.handleMessage(msg);
-            }
-
-        };
-    }
 
     class updateRaceinfo extends AsyncTask<Void, String, Void>//경기정보 받아옴
     {
         private String data;
         String sendMsg;
 
-        protected void onPreExecute() {
+       /* protected void onPreExecute() {
             pDialog = new ProgressDialog(TimingHut_1500Activity.this);
             pDialog.setMessage("검색중입니다...");
             pDialog.setCancelable(false);
             pDialog.show();
             super.onPreExecute();
-        }
+        }*/
 
         protected Void doInBackground(Void... param) {
-            try {
-                URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");//데이터 전송
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setDefaultUseCaches(false);
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "raceDate=" + data;//보낼 정보
-                osw.write(sendMsg);
-                osw.flush();
+            while (true) {
+                try {
+                    URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    conn.setRequestMethod("POST");//데이터 전송
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+                    conn.setUseCaches(false);
+                    conn.setDefaultUseCaches(false);
+                    OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                    sendMsg = "raceDate=" + data;//보낼 정보
+                    osw.write(sendMsg);
+                    osw.flush();
 
-                conn.connect();
-                InputStream is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String line = "";
-                String page = "";
+                    conn.connect();
+                    InputStream is = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                    String line = "";
+                    String page = "";
 
-                while ((line = reader.readLine()) != null) {
-                    page += line;
-                }
-
-                // JSONObject 받는 부분
-                JSONObject sObject = new JSONObject(page);
-                JSONArray sArray = sObject.getJSONArray("dataSend");
-
-                //경기번호
-                sObject = sArray.getJSONObject(0);
-                race_num=sObject.getString("race_num");
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        raceNumber.setText(race_num);
+                    while ((line = reader.readLine()) != null) {
+                        page += line;
                     }
-                });
 
-                //경기 상태
-                sObject=sArray.getJSONObject(1);
-                Onoff=sObject.getString("Onoff");
-                if (Onoff.equals("0")) {
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run() {
-                            raceState.setText(" 경기 종료 ");
-                        }
-                    });
-                } else if(Onoff.equals("1")) {
+                    // JSONObject 받는 부분
+                    JSONObject sObject = new JSONObject(page);
+                    JSONArray sArray = sObject.getJSONArray("dataSend");
+
+                    //경기번호
+                    sObject = sArray.getJSONObject(0);
+                    race_num = sObject.getString("race_num");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            raceState.setText(" 경기중 ");
+                            raceNumber.setText(race_num);
                         }
                     });
-                }else if(Onoff.equals("2")) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            raceState.setText(" 2분전 ");
-                        }
-                    });
-                }else if(Onoff.equals("3")) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ////
-                        }
-                    });
-                }else {
-                    run();
+
+                    //경기 상태
+                    sObject = sArray.getJSONObject(1);
+                    Onoff = sObject.getString("Onoff");
+                    publishProgress(Onoff);
+
+                    //시작시간
+                    sObject = sArray.getJSONObject(2);
+                    StartTime = sObject.getString("StartTime");
+
+                    conn.disconnect();
+
+                } catch(MalformedURLException | ProtocolException exception){
+                    noConfirm();
+                    exception.printStackTrace();
+                    finish();
+                } catch(IOException io){
+                    noConfirm();
+                    io.printStackTrace();
+                } catch(JSONException e){
+                    noConfirm();
+                    e.printStackTrace();
                 }
-
-                //시작시간
-                sObject = sArray.getJSONObject(2);
-                StartTime=sObject.getString("StartTime");
-
-            } catch (MalformedURLException | ProtocolException exception) {
-                noConfirm();
-                exception.printStackTrace();
-                finish();
-            } catch (IOException io) {
-                noConfirm();
-                io.printStackTrace();
-            } catch (JSONException e) {
-                noConfirm();
-                e.printStackTrace();
             }
-            return null;
-
         }
 
         public void noConfirm() {
@@ -927,7 +567,71 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         };
 
         protected void onPostExecute(Void aVoid) {
+
             pDialog.dismiss();
+        }
+
+        protected void onProgressUpdate(String... progress){
+            if(progress[0].equals("0")){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        raceState.setText(" 경기 종료 ");
+                    }
+                });
+            }
+            else if(progress[0].equals("2")){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        raceState.setText(" 2분전 ");
+                    }
+                });
+            }
+            else if(progress[0].equals("1")){
+                Date now = new Date();
+                long nowTime = now.getTime();//현재 시간
+                long ell;
+
+                try {
+                    Calendar calendar=new GregorianCalendar(Locale.KOREA);
+                    String dateString = calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH) + 1) +"-"+calendar.get(Calendar.DAY_OF_MONTH)+"T"+StartTime;
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+                    Date date = sdf.parse(dateString);
+                    long startDate = date.getTime();//경기 시작 시간
+                    ell=nowTime-startDate;
+
+                    String totalsec = Long.toString(ell / 1000);
+                    String tinysec = Long.toString(ell % 100);
+                    if(Long.parseLong(tinysec) < 10){
+                        tinysec += ""+tinysec;
+                    }
+                    String totalmin = Long.toString(Long.parseLong(totalsec) / 60);
+                    String sec = Long.toString(Long.parseLong(totalsec) % 60);
+                    if(Long.parseLong(sec)<10)
+                        sec="0"+sec;
+                    String hour = Long.toString(Long.parseLong(totalmin) / 60);
+                    if(Long.parseLong(hour)<10)
+                        hour="0"+hour;
+                    String min = Long.toString(Long.parseLong(totalmin)% 60);
+                    if(Long.parseLong(min)<10)
+                        min="0"+min;
+                    hEll = hour + ":" + min + ":" + sec + "." + tinysec;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            raceState.setText(" 경기중 ");
+                            raceState.setBackground(getDrawable(R.drawable.ongoing_state_border));
+                            ongoingTime.setText(hEll);
+                        }
+                    });
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+            else{
+                run();
+            }
         }
 
         private void setData(String data) {

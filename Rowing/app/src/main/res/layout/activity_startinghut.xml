@@ -199,26 +199,6 @@
                     android:padding="10dp" />
 
                 <Button
-                    android:id="@+id/Finish_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button_border"
-                    android:onClick="mOnClick"
-                    android:padding="20dp"
-                    android:shadowColor="#aaada9"
-                    android:shadowDx="0"
-                    android:shadowDy="0"
-                    android:shadowRadius="1"
-                    android:text="  종료  "
-                    android:textSize="70dp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="55dp"
-                    android:layout_height="wrap_content"
-                    android:padding="10dp" />
-
-                <Button
                     android:id="@+id/Reset_Button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -32,18 +32,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StartingHutActivity extends AppCompatActivity {
-    private static final String URL_ADDRESS_SET_ONOFF = "http://172.30.1.14:8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
-    private static final String URL_ADDRESS_STOPTIME = "http://172.30.1.14:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
-    private static final String URL_ADDRESS_STARTTIME="http://172.30.1.14:8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
-    private static final String URL_ADDRESS_FINISHTIME="http://172.30.1.14:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
-    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://172.30.1.14:8080/airquayRowing/main/getRaceNum";//경기 유무 확인
+    private static final String URL_ADDRESS_SET_ONOFF = "http://192.168.254.171:8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
+    private static final String URL_ADDRESS_STOPTIME = "http://192.168.254.171:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
+    private static final String URL_ADDRESS_STARTTIME="http://192.168.254.171:8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
+    private static final String URL_ADDRESS_FINISHTIME="http://192.168.254.171:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
+    private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://192.168.254.171:8080/airquayRowing/main/getRaceNum";//경기 유무 확인
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
     TextView raceDate, currentTime, timerTime, raceState, raceNum, confirmConnection;
-    Button goButton, twoMinutesButton, data, Finish_Button, Reset_Button;
+    Button goButton, twoMinutesButton, data, Reset_Button;
     long baseTime;
     int tStatus = IDLE;
     int tempNumber = 1;
@@ -63,8 +63,6 @@ public class StartingHutActivity extends AppCompatActivity {
         raceNum = (TextView) findViewById(R.id.race_num);//~번
         goButton = (Button) findViewById(R.id.go_button);//Start
         goButton.setEnabled(false);
-        Finish_Button=(Button)findViewById(R.id.Finish_button);//종료
-        Finish_Button.setEnabled(false);
         Reset_Button=(Button)findViewById(R.id.Reset_Button);//Reset
         Reset_Button.setEnabled(false);
 
@@ -91,7 +89,6 @@ public class StartingHutActivity extends AppCompatActivity {
                     timerTime.setText(getReset());
                     twoMinutesButton.setEnabled(true);
                     goButton.setEnabled(false);
-                    Finish_Button.setEnabled(false);
                     data.setEnabled(false);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
@@ -138,7 +135,6 @@ public class StartingHutActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "완료되었습니다.", Toast.LENGTH_LONG).show();
                         raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.ongoing_state_border));
                         raceState.setText(" 경기중 ");
-                        Finish_Button.setEnabled(true);
                         twoMinutesButton.setEnabled(false);
                         baseTime = SystemClock.elapsedRealtime();
                         mTimer.sendEmptyMessage(0);
@@ -177,7 +173,6 @@ public class StartingHutActivity extends AppCompatActivity {
                         raceState.setText(" 대기 ");
                         Reset_Button.setEnabled(true);
                         goButton.setEnabled(false);
-                        Finish_Button.setEnabled(false);
                         mTimer.removeMessages(0);
                         goButton.setText(" Start ");
                         tStatus = PAUSE;
@@ -203,7 +198,6 @@ public class StartingHutActivity extends AppCompatActivity {
                         raceState.setText(" 경기중 ");
                         goButton.setText(" False ");
                         Reset_Button.setEnabled(false);
-                        Finish_Button.setEnabled(true);
                         tStatus = RUNNING;
                         Log.i("PAUSE", "PAUSE");
                         break;
@@ -228,43 +222,6 @@ public class StartingHutActivity extends AppCompatActivity {
                 raceState.setVisibility(View.VISIBLE);
                 break;
 
-            case R.id.Finish_button://종료버튼 누를 때
-
-                try {
-                    FinishTimeSender finish = new FinishTimeSender();
-                    finish.setData(currentTime.getText().toString());
-                    finish.execute();
-                } catch (Exception e) {
-                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }
-
-                pastTime=timerTime.getText().toString();
-                String[] timeTemp=pastTime.split(":|[.]");
-                Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
-                String[] timeSplit=timeTemp[2].split(".");
-                try {
-                    StopTimeSender finishTimeSender = new StopTimeSender();
-                    finishTimeSender.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
-                } catch (Exception e) {
-                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                    finish();
-                    e.printStackTrace();
-                }
-
-                mTimer.removeMessages(0);
-                tStatus = IDLE;
-                raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.two_minutes_state_border));
-                raceState.setText(" 경기종료 ");
-                goButton.setText(" Start ");
-                goButton.setEnabled(false);
-                twoMinutesButton.setEnabled(false);
-                Reset_Button.setEnabled(false);
-                Finish_Button.setEnabled(true);
-                data.setEnabled(true);
-                break;
-
             case R.id.Reset_Button://Reset버튼 누를 때
 
                 try {
@@ -281,9 +238,6 @@ public class StartingHutActivity extends AppCompatActivity {
 
         }
     }
-
-
-
 
     String getElapse()
     {

@@ -44,8 +44,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 public class TimingHut_500Activity extends AppCompatActivity {
-    private static final String URL_RECORD = "http://172.30.1.14:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://172.30.1.14:8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_RECORD = "http://192.168.254.171:8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://192.168.254.171:8080/airquayRowing/main/updateRaceinfo";
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -71,7 +71,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
-    int lStatus = IDLE;
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
@@ -92,7 +91,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
         ongoingTime = (TextView) findViewById(R.id.hut_ongoing_time);//시작하고나서부터의 시간
         raceNumber = (TextView) findViewById(R.id.hut_race_num);//몇 번 경기
         lapButton = (Button) findViewById(R.id.lap_button);//랩 버튼
-        stopButton = (ImageButton) findViewById(R.id.stop_button);//STOP 버튼
         firstRecord = (TextView) findViewById(R.id.first_record);//첫번째 기록
         secondRecord = (TextView) findViewById(R.id.second_record);//두번째 기록
         thirdRecord = (TextView) findViewById(R.id.third_record);//세번째 기록
@@ -110,7 +108,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
         stringRaceNum = raceNumber.getText().toString();//몇번 경기 문자열
         raceState=(TextView) findViewById(R.id.hut_race_state);//경기중 표시 공간
         raceNum1 = Integer.parseInt(stringRaceNum);//몇번 경기 int 형
-        goButton = (Button) findViewById(R.id.hut_go_button);//시작 버튼
         for (int i = 0; i < 6; i++) {
             bowNumButton[i] = (Button) findViewById(buttonIds2[i]);//기록 옆에 노란 버튼
             dropMenu[i] = (LinearLayout) findViewById(menuIds[i]);//노란버튼 누르고 나서 나오는 숫자 리스트
@@ -240,30 +237,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 }
             }
         });
-        //mHandler.sendEmptyMessage(0);
     }
-
-    /*private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            try {
-                TimerIsOn b = new TimerIsOn();
-                b.execute();
-                Log.i(checker,checker+"췌커가 여기서 시작도ㅣㄱㄴ하지? ");
-                TimerCaller a = new TimerCaller();
-                a.setDate(checker);
-                a.execute();
-                Log.i(checker,checker+"췌커는 여기란다 ");
-                mHandler.sendEmptyMessageDelayed(0,500);
-            } catch (Exception e) {
-                Toast.makeText(TimingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
-                finish();
-                e.printStackTrace();
-            }
-
-        }
-    };
-*/
 
     private void playAudio(String url) throws Exception {
         //오디오 재생
@@ -310,66 +284,36 @@ public class TimingHut_500Activity extends AppCompatActivity {
         thread.start();//스레드 시작
     }
 
-    Handler lTimer = new Handler() {
-        public void handleMessage(Message msg) {
-            ongoingTime.setText(getHutEllapse());
-            lTimer.sendEmptyMessage(0);
-        }
-    };
-
-    protected void onDestroy() {
-        lTimer.removeMessages(0);
-        super.onDestroy();
-    }
-
     public void hutOnClick(View v) {
         //스톱워치 랩 기능 구현
-        switch (v.getId()) {
-            case R.id.hut_go_button:
-                hBaseTime = SystemClock.elapsedRealtime();
-                lTimer.sendEmptyMessage(0);
-                lStatus = RUNNING;
-                lapButton.setEnabled(true);
-                goButton.setVisibility(View.INVISIBLE);
-                break;
-            case R.id.lap_button:
-                String split = String.format("%s", getHutEllapse());
-                switch (splitCount) {
-                    case 1:
-                        firstRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 2:
-                        secondRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 3:
-                        thirdRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 4:
-                        fourthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 5:
-                        fifthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    case 6:
-                        sixthRecord.setText(split);
-                        splitCount++;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case R.id.stop_button:
-                raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.end_state_border));
-                raceState.setText(" 경기 종료 ");
-                lTimer.removeMessages(0);
-                hPauseTime = SystemClock.elapsedRealtime();
-                lStatus = IDLE;
-                break;
+            String split = ongoingTime.getText().toString();
+            switch (splitCount) {
+                case 1:
+                    firstRecord.setText(split);
+                    splitCount++;
+                    break;
+                case 2:
+                    secondRecord.setText(split);
+                    splitCount++;
+                    break;
+                case 3:
+                    thirdRecord.setText(split);
+                    splitCount++;
+                    break;
+                case 4:
+                    fourthRecord.setText(split);
+                    splitCount++;
+                    break;
+                case 5:
+                    fifthRecord.setText(split);
+                    splitCount++;
+                    break;
+                case 6:
+                    sixthRecord.setText(split);
+                    splitCount++;
+                    break;
+                default:
+                    break;
         }
         records[0] = firstRecord.getText().toString();
         records[1] = secondRecord.getText().toString();
@@ -377,13 +321,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
         records[3] = fourthRecord.getText().toString();
         records[4] = fifthRecord.getText().toString();
         records[5] = sixthRecord.getText().toString();
-    }
-
-    String getHutEllapse() {
-        long now = SystemClock.elapsedRealtime();
-        long ell = now - hBaseTime;
-        String hEll = String.format("%02d:%02d:%02d.%02d", ell / 500 / 360, ell / 500 / 60, (ell / 500) % 60, (ell % 500) / 10);
-        return hEll;
     }
 
     //노란버튼 눌렀을 때, 리스트 꺼내는 메소드
@@ -524,6 +461,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
         }
     }
 
+
     class updateRaceinfo extends AsyncTask<Void, String, Void>//경기정보 받아옴
     {
         private String data;
@@ -585,6 +523,8 @@ public class TimingHut_500Activity extends AppCompatActivity {
                         //시작시간
                         sObject = sArray.getJSONObject(2);
                         StartTime = sObject.getString("StartTime");
+
+                        conn.disconnect();
 
                     } catch(MalformedURLException | ProtocolException exception){
                         noConfirm();
@@ -660,11 +600,28 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     Date date = sdf.parse(dateString);
                     long startDate = date.getTime();//경기 시작 시간
                     ell=nowTime-startDate;
-                    hEll = String.format("%02d:%02d:%02d.%02d", ell/1000/360, ell / 1000 / 60, (ell / 1000) % 60, (ell % 1000) / 10);
+
+                    String totalsec = Long.toString(ell / 1000);
+                    String tinysec = Long.toString(ell % 100);
+                    if(Long.parseLong(tinysec) < 10){
+                        tinysec += ""+tinysec;
+                    }
+                    String totalmin = Long.toString(Long.parseLong(totalsec) / 60);
+                    String sec = Long.toString(Long.parseLong(totalsec) % 60);
+                    if(Long.parseLong(sec)<10)
+                        sec="0"+sec;
+                    String hour = Long.toString(Long.parseLong(totalmin) / 60);
+                    if(Long.parseLong(hour)<10)
+                        hour="0"+hour;
+                    String min = Long.toString(Long.parseLong(totalmin)% 60);
+                    if(Long.parseLong(min)<10)
+                        min="0"+min;
+                    hEll = hour + ":" + min + ":" + sec + "." + tinysec;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             raceState.setText(" 경기중 ");
+                            raceState.setBackground(getDrawable(R.drawable.ongoing_state_border));
                             ongoingTime.setText(hEll);
                         }
                     });
