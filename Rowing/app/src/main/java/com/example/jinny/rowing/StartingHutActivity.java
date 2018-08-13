@@ -41,6 +41,7 @@ public class StartingHutActivity extends AppCompatActivity {
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
     private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://"+IP+":8080/airquayRowing/main/getRaceNum";//경기 유무 확인
     private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
+    updateRaceinfo Update;
     final static int IDLE = 0;
     final static int RUNNING = 1;
     final static int PAUSE = 2;
@@ -82,10 +83,9 @@ public class StartingHutActivity extends AppCompatActivity {
 
         //진행중인 경기정보 가져오고 UI 세팅
         try {
-            StartingHutActivity.updateRaceinfo b = new StartingHutActivity.updateRaceinfo();
-            b.setData(dateFormat.format(new Date()));
-            b.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+            Update = new updateRaceinfo();
+            Update.setData(dateFormat.format(new Date()));
+            Update.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
             finish();
@@ -277,6 +277,10 @@ public class StartingHutActivity extends AppCompatActivity {
         thread.start();
     }
 
+    public void onBackPressed() {
+        Update.cancel(true);
+        super.onBackPressed();
+    }
 
 
 
@@ -607,7 +611,7 @@ public class StartingHutActivity extends AppCompatActivity {
         }*/
 
         protected Void doInBackground(Void... param) {
-            while (true) {
+            while (!isCancelled()) {
                 try {
                     URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -657,19 +661,21 @@ public class StartingHutActivity extends AppCompatActivity {
 
                     conn.disconnect();
 
-                } catch(MalformedURLException | ProtocolException exception){
+                } catch (MalformedURLException | ProtocolException exception) {
                     noConfirm();
                     exception.printStackTrace();
                     finish();
-                } catch(IOException io){
+                } catch (IOException io) {
                     noConfirm();
                     io.printStackTrace();
-                } catch(JSONException e){
+                } catch (JSONException e) {
                     noConfirm();
                     e.printStackTrace();
                 }
             }
+            return null;
         }
+
 
         public void noConfirm() {
             confirmHandler.sendEmptyMessage(0);

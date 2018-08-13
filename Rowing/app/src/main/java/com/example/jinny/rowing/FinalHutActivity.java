@@ -50,6 +50,7 @@ public class FinalHutActivity extends AppCompatActivity {
     private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
     private static final String URL_ADDRESS_FINISHTIME="http://"+IP+":8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
+    updateRaceinfo Update;
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -125,9 +126,9 @@ public class FinalHutActivity extends AppCompatActivity {
 
         //진행중인 경기정보 가져오고 UI 세팅
         try {
-            updateRaceinfo b = new updateRaceinfo();
-            b.setData(dateFormat.format(new Date()));
-            b.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            Update = new updateRaceinfo();
+            Update.setData(dateFormat.format(new Date()));
+            Update.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         } catch (Exception e) {
             Toast.makeText(FinalHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
@@ -431,6 +432,11 @@ public class FinalHutActivity extends AppCompatActivity {
         }
     }
 
+    public void onBackPressed() {
+        Update.cancel(true);
+        super.onBackPressed();
+    }
+
 
 
 
@@ -513,7 +519,7 @@ public class FinalHutActivity extends AppCompatActivity {
         }*/
 
         protected Void doInBackground(Void... param) {
-            while (true) {
+            while (!isCancelled()) {
                 try {
                     URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -563,19 +569,21 @@ public class FinalHutActivity extends AppCompatActivity {
 
                     conn.disconnect();
 
-                } catch(MalformedURLException | ProtocolException exception){
+                } catch (MalformedURLException | ProtocolException exception) {
                     noConfirm();
                     exception.printStackTrace();
                     finish();
-                } catch(IOException io){
+                } catch (IOException io) {
                     noConfirm();
                     io.printStackTrace();
-                } catch(JSONException e){
+                } catch (JSONException e) {
                     noConfirm();
                     e.printStackTrace();
                 }
             }
+            return null;
         }
+
 
         public void noConfirm() {
             confirmHandler.sendEmptyMessage(0);
@@ -676,7 +684,6 @@ public class FinalHutActivity extends AppCompatActivity {
         }
 
     }
-
 
     class FinishTimeSender extends AsyncTask<Void, Void, Void> //종료 랩 타임 전송
     {
