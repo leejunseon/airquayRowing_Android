@@ -35,7 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class StartingHutActivity extends AppCompatActivity {
-    public static final String IP="192.168.254.103";
+    public static final String IP="172.30.1.30";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
@@ -53,7 +53,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
     long baseTime;
     int tStatus = IDLE;
-    int tempNumber = 1;
+    int tempNumber;
     String LoadData, pastTime;
     String[] timeTemp,timeSplit;
     boolean flag;
@@ -643,6 +643,7 @@ public class StartingHutActivity extends AppCompatActivity {
                     //경기번호
                     sObject = sArray.getJSONObject(0);
                     race_num = sObject.getString("race_num");
+                    tempNumber=Integer.parseInt(race_num);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -661,15 +662,18 @@ public class StartingHutActivity extends AppCompatActivity {
 
                     conn.disconnect();
 
-                } catch (MalformedURLException | ProtocolException exception) {
-                    noConfirm();
+                }catch (MalformedURLException | ProtocolException exception) {
+                    if(!isCancelled())
+                        noConfirm();
                     exception.printStackTrace();
                     finish();
                 } catch (IOException io) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     e.printStackTrace();
                 }
             }
@@ -713,7 +717,9 @@ public class StartingHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
+                        raceState.setVisibility(View.VISIBLE);
                     }
                 });
             }
@@ -721,7 +727,10 @@ public class StartingHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        raceState.setText(" 2분전 ");
+                        goButton.setEnabled(true);
+                        raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
+                        raceState.setText(" 2 분전 ");
+                        raceState.setVisibility(View.VISIBLE);
                     }
                 });
             }
@@ -757,8 +766,11 @@ public class StartingHutActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            raceState.setVisibility(View.VISIBLE);
                             raceState.setText(" 경기중 ");
                             raceState.setBackground(getDrawable(R.drawable.ongoing_state_border));
+                            twoMinutesButton.setEnabled(false);
+                            goButton.setText(" False ");
                             ongoingTime.setText(hEll);
                         }
                     });

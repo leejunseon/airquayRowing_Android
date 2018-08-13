@@ -72,15 +72,13 @@ public class FinalHutActivity extends AppCompatActivity {
     Integer[] menuIds = {R.id.bow_number_list_1, R.id.bow_number_list_2, R.id.bow_number_list_3, R.id.bow_number_list_4, R.id.bow_number_list_5, R.id.bow_number_list_6};
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
-    Button goButton;
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
-    String tempNumber;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String  Onoff, race_num, StartTime, checker = "null";
+    String  Onoff, race_num, StartTime;
     String hEll;
 
     MediaPlayer player = null;
@@ -120,7 +118,6 @@ public class FinalHutActivity extends AppCompatActivity {
         for (int i = 0; i < 36; i++)
             bowNumSelectButton[i] = (Button) findViewById(buttonIds1[i]);//리스트 안의 숫자들
 
-        tempNumber=raceNumber.getText().toString();
 
         showTime();//현재 시간과 날짜 출력하는 함수
 
@@ -245,7 +242,7 @@ public class FinalHutActivity extends AppCompatActivity {
                         CustomTask a = new CustomTask();
                         int temp = Integer.parseInt(bowNumButton[i].getText().toString());//temp = bow_num
                         String[] timeTemp = records[i].split(":|[.]");//웹에 넘길 때 "00:00:00.00" 이런 포맷은 특수문자 때문에 넘어가지 않아 시, 분, 초, 밀리초 로 다 나눔
-                        a.setData(temp, raceNum1,i+1);
+                        a.setData(temp, Integer.parseInt(race_num),i+1);
                         a.execute(hutPosition, timeTemp[0], timeTemp[1], timeTemp[2], timeTemp[3]);
                     }
                 } catch (Exception e) {
@@ -570,14 +567,17 @@ public class FinalHutActivity extends AppCompatActivity {
                     conn.disconnect();
 
                 } catch (MalformedURLException | ProtocolException exception) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     exception.printStackTrace();
                     finish();
                 } catch (IOException io) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     e.printStackTrace();
                 }
             }
@@ -685,6 +685,7 @@ public class FinalHutActivity extends AppCompatActivity {
 
     }
 
+
     class FinishTimeSender extends AsyncTask<Void, Void, Void> //종료 랩 타임 전송
     {
         private String sendMsg;
@@ -710,7 +711,7 @@ public class FinalHutActivity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "stop_time=" + data+"&race_num="+tempNumber+"&OnOff=0";//보낼 정보(OnOff, raceNum)
+                sendMsg = "stop_time=" + data+"&race_num="+raceNumber.getText().toString()+"&OnOff=0";//보낼 정보(OnOff, raceNum)
                 osw.write(sendMsg);
                 osw.flush();
 
@@ -773,7 +774,7 @@ public class FinalHutActivity extends AppCompatActivity {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                sendMsg = "HOUR=" + strings[0]+"&MINUTE="+strings[1]+"&SECOND="+strings[2]+"&MILISECOND="+strings[3]+"&raceNum="+tempNumber;//보낼 정보
+                sendMsg = "HOUR=" + strings[0]+"&MINUTE="+strings[1]+"&SECOND="+strings[2]+"&MILISECOND="+strings[3]+"&raceNum="+raceNumber.getText().toString();//보낼 정보
                 osw.write(sendMsg);
                 osw.flush();
 

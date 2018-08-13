@@ -206,7 +206,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
                         CustomTask a = new CustomTask();
                         int temp = Integer.parseInt(bowNumButton[i].getText().toString());//temp = bow_num
                         String[] timeTemp = records[i].split(":|[.]");//웹에 넘길 때 "00:00:00.00" 이런 포맷은 특수문자 때문에 넘어가지 않아 시, 분, 초, 밀리초 로 다 나눔
-                        a.setData(temp, raceNum1,i+1);
+                        a.setData(temp, Integer.parseInt(race_num),i+1);
                         a.execute(hutPosition, timeTemp[0], timeTemp[1], timeTemp[2], timeTemp[3]);
                     }
                 } catch (Exception e) {
@@ -530,14 +530,17 @@ public class TimingHut_1500Activity extends AppCompatActivity {
                     conn.disconnect();
 
                 } catch (MalformedURLException | ProtocolException exception) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     exception.printStackTrace();
                     finish();
                 } catch (IOException io) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
-                    noConfirm();
+                    if(!isCancelled())
+                        noConfirm();
                     e.printStackTrace();
                 }
             }
