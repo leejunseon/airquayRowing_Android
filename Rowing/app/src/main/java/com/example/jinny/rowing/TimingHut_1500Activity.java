@@ -42,10 +42,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+import static com.example.jinny.rowing.StartingHutActivity.IP;
 
 public class TimingHut_1500Activity extends AppCompatActivity {
-    private static final String URL_RECORD = "http://192.168.254.171:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://192.168.254.171:8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_RECORD = "http://"+IP+":8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
+    updateRaceinfo Update;
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -67,16 +69,13 @@ public class TimingHut_1500Activity extends AppCompatActivity {
     Integer[] menuIds = {R.id.bow_number_list_1, R.id.bow_number_list_2, R.id.bow_number_list_3, R.id.bow_number_list_4, R.id.bow_number_list_5, R.id.bow_number_list_6};
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
-    Button goButton;
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String  Onoff, race_num, StartTime, checker = "null";
-    private TimerTask mTask;
-    private Timer mTimer;
+    String  Onoff, race_num, StartTime;
     String hEll;
 
     MediaPlayer player = null;
@@ -119,10 +118,9 @@ public class TimingHut_1500Activity extends AppCompatActivity {
 
         //진행중인 경기정보 가져오고 UI 세팅
         try {
-            updateRaceinfo b = new updateRaceinfo();
-            b.setData(dateFormat.format(new Date()));
-            b.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+            Update = new updateRaceinfo();
+            Update.setData(dateFormat.format(new Date()));
+            Update.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             Toast.makeText(TimingHut_1500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
             finish();
@@ -239,6 +237,11 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         });
     }
 
+    public void onBackPressed() {
+        Update.cancel(true);
+        super.onBackPressed();
+    }
+
     private void playAudio(String url) throws Exception {
         //오디오 재생
         killMediaPlayer();
@@ -273,7 +276,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(1500);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                     }
                     handler.sendEmptyMessage(2);
@@ -476,7 +479,7 @@ public class TimingHut_1500Activity extends AppCompatActivity {
         }*/
 
         protected Void doInBackground(Void... param) {
-            while (true) {
+            while (!isCancelled()) {
                 try {
                     URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -526,19 +529,21 @@ public class TimingHut_1500Activity extends AppCompatActivity {
 
                     conn.disconnect();
 
-                } catch(MalformedURLException | ProtocolException exception){
+                } catch (MalformedURLException | ProtocolException exception) {
                     noConfirm();
                     exception.printStackTrace();
                     finish();
-                } catch(IOException io){
+                } catch (IOException io) {
                     noConfirm();
                     io.printStackTrace();
-                } catch(JSONException e){
+                } catch (JSONException e) {
                     noConfirm();
                     e.printStackTrace();
                 }
             }
+            return null;
         }
+
 
         public void noConfirm() {
             confirmHandler.sendEmptyMessage(0);

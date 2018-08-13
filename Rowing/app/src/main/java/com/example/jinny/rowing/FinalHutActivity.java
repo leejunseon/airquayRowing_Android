@@ -42,12 +42,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+import static com.example.jinny.rowing.StartingHutActivity.IP;
+
 
 public class FinalHutActivity extends AppCompatActivity {
-    private static final String URL_RECORD = "http://192.168.254.171:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://192.168.254.171:8080/airquayRowing/main/updateRaceinfo";
-    private static final String URL_ADDRESS_FINISHTIME="http://192.168.254.171:8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
-    private static final String URL_ADDRESS_STOPTIME = "http://192.168.254.171:8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
+    private static final String URL_RECORD = "http://"+IP+":8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_ADDRESS_FINISHTIME="http://"+IP+":8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
+    private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -78,8 +80,6 @@ public class FinalHutActivity extends AppCompatActivity {
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
     String  Onoff, race_num, StartTime, checker = "null";
-    private TimerTask mTask;
-    private Timer mTimer;
     String hEll;
 
     MediaPlayer player = null;
@@ -498,6 +498,7 @@ public class FinalHutActivity extends AppCompatActivity {
     }
 
 
+
     class updateRaceinfo extends AsyncTask<Void, String, Void>//경기정보 받아옴
     {
         private String data;
@@ -676,6 +677,7 @@ public class FinalHutActivity extends AppCompatActivity {
 
     }
 
+
     class FinishTimeSender extends AsyncTask<Void, Void, Void> //종료 랩 타임 전송
     {
         private String sendMsg;
@@ -747,6 +749,7 @@ public class FinalHutActivity extends AppCompatActivity {
             this.data = data;
         }
     }
+
 
     class StopTimeSender extends AsyncTask<String, Void, Void> //타이머 멈췄을 때 멈춘 랩타임 시간 형식으로 전송
     {

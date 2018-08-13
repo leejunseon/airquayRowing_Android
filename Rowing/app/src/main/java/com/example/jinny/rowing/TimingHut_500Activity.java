@@ -42,10 +42,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+import static com.example.jinny.rowing.StartingHutActivity.IP;
 
 public class TimingHut_500Activity extends AppCompatActivity {
-    private static final String URL_RECORD = "http://192.168.254.171:8080/airquayRowing/main/recordUpload";
-    private static final String URL_UPDATE_RACEINFO="http://192.168.254.171:8080/airquayRowing/main/updateRaceinfo";
+    private static final String URL_RECORD = "http://"+IP+":8080/airquayRowing/main/recordUpload";
+    private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
+    updateRaceinfo Update;
     final static int IDLE = 0;
     final static int RUNNING = 1;
     private ProgressDialog pDialog;
@@ -67,16 +69,13 @@ public class TimingHut_500Activity extends AppCompatActivity {
     Integer[] menuIds = {R.id.bow_number_list_1, R.id.bow_number_list_2, R.id.bow_number_list_3, R.id.bow_number_list_4, R.id.bow_number_list_5, R.id.bow_number_list_6};
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
-    Button goButton;
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String  Onoff, race_num, StartTime, checker = "null";
-    private TimerTask mTask;
-    private Timer mTimer;
+    String  Onoff, race_num, StartTime;
     String hEll;
 
     MediaPlayer player = null;
@@ -119,10 +118,9 @@ public class TimingHut_500Activity extends AppCompatActivity {
 
         //진행중인 경기정보 가져오고 UI 세팅
         try {
-            updateRaceinfo b = new updateRaceinfo();
-            b.setData(dateFormat.format(new Date()));
-            b.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+            Update = new updateRaceinfo();
+            Update.setData(dateFormat.format(new Date()));
+            Update.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             Toast.makeText(TimingHut_500Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
             finish();
@@ -239,6 +237,11 @@ public class TimingHut_500Activity extends AppCompatActivity {
         });
     }
 
+    public void onBackPressed() {
+        Update.cancel(true);
+        super.onBackPressed();
+    }
+
     private void playAudio(String url) throws Exception {
         //오디오 재생
         killMediaPlayer();
@@ -286,34 +289,34 @@ public class TimingHut_500Activity extends AppCompatActivity {
 
     public void hutOnClick(View v) {
         //스톱워치 랩 기능 구현
-            String split = ongoingTime.getText().toString();
-            switch (splitCount) {
-                case 1:
-                    firstRecord.setText(split);
-                    splitCount++;
-                    break;
-                case 2:
-                    secondRecord.setText(split);
-                    splitCount++;
-                    break;
-                case 3:
-                    thirdRecord.setText(split);
-                    splitCount++;
-                    break;
-                case 4:
-                    fourthRecord.setText(split);
-                    splitCount++;
-                    break;
-                case 5:
-                    fifthRecord.setText(split);
-                    splitCount++;
-                    break;
-                case 6:
-                    sixthRecord.setText(split);
-                    splitCount++;
-                    break;
-                default:
-                    break;
+        String split = ongoingTime.getText().toString();
+        switch (splitCount) {
+            case 1:
+                firstRecord.setText(split);
+                splitCount++;
+                break;
+            case 2:
+                secondRecord.setText(split);
+                splitCount++;
+                break;
+            case 3:
+                thirdRecord.setText(split);
+                splitCount++;
+                break;
+            case 4:
+                fourthRecord.setText(split);
+                splitCount++;
+                break;
+            case 5:
+                fifthRecord.setText(split);
+                splitCount++;
+                break;
+            case 6:
+                sixthRecord.setText(split);
+                splitCount++;
+                break;
+            default:
+                break;
         }
         records[0] = firstRecord.getText().toString();
         records[1] = secondRecord.getText().toString();
@@ -476,69 +479,71 @@ public class TimingHut_500Activity extends AppCompatActivity {
         }*/
 
         protected Void doInBackground(Void... param) {
-            while (true) {
+            while (!isCancelled()) {
                 try {
-                        URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                        conn.setRequestMethod("POST");//데이터 전송
-                        conn.setDoOutput(true);
-                        conn.setDoInput(true);
-                        conn.setUseCaches(false);
-                        conn.setDefaultUseCaches(false);
-                        OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-                        sendMsg = "raceDate=" + data;//보낼 정보
-                        osw.write(sendMsg);
-                        osw.flush();
+                    URL url = new URL(URL_UPDATE_RACEINFO);//보낼 주소
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    conn.setRequestMethod("POST");//데이터 전송
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+                    conn.setUseCaches(false);
+                    conn.setDefaultUseCaches(false);
+                    OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                    sendMsg = "raceDate=" + data;//보낼 정보
+                    osw.write(sendMsg);
+                    osw.flush();
 
-                        conn.connect();
-                        InputStream is = conn.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                        String line = "";
-                        String page = "";
+                    conn.connect();
+                    InputStream is = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                    String line = "";
+                    String page = "";
 
-                        while ((line = reader.readLine()) != null) {
-                            page += line;
-                        }
-
-                        // JSONObject 받는 부분
-                        JSONObject sObject = new JSONObject(page);
-                        JSONArray sArray = sObject.getJSONArray("dataSend");
-
-                        //경기번호
-                        sObject = sArray.getJSONObject(0);
-                        race_num = sObject.getString("race_num");
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                raceNumber.setText(race_num);
-                            }
-                        });
-
-                        //경기 상태
-                        sObject = sArray.getJSONObject(1);
-                        Onoff = sObject.getString("Onoff");
-                        publishProgress(Onoff);
-
-                        //시작시간
-                        sObject = sArray.getJSONObject(2);
-                        StartTime = sObject.getString("StartTime");
-
-                        conn.disconnect();
-
-                    } catch(MalformedURLException | ProtocolException exception){
-                        noConfirm();
-                        exception.printStackTrace();
-                        finish();
-                    } catch(IOException io){
-                        noConfirm();
-                        io.printStackTrace();
-                    } catch(JSONException e){
-                        noConfirm();
-                        e.printStackTrace();
+                    while ((line = reader.readLine()) != null) {
+                        page += line;
                     }
+
+                    // JSONObject 받는 부분
+                    JSONObject sObject = new JSONObject(page);
+                    JSONArray sArray = sObject.getJSONArray("dataSend");
+
+                    //경기번호
+                    sObject = sArray.getJSONObject(0);
+                    race_num = sObject.getString("race_num");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            raceNumber.setText(race_num);
+                        }
+                    });
+
+                    //경기 상태
+                    sObject = sArray.getJSONObject(1);
+                    Onoff = sObject.getString("Onoff");
+                    publishProgress(Onoff);
+
+                    //시작시간
+                    sObject = sArray.getJSONObject(2);
+                    StartTime = sObject.getString("StartTime");
+
+                    conn.disconnect();
+
+                } catch (MalformedURLException | ProtocolException exception) {
+                    noConfirm();
+                    exception.printStackTrace();
+                    finish();
+                } catch (IOException io) {
+                    noConfirm();
+                    io.printStackTrace();
+                } catch (JSONException e) {
+                    noConfirm();
+                    e.printStackTrace();
                 }
+            }
+            return null;
         }
+
 
         public void noConfirm() {
             confirmHandler.sendEmptyMessage(0);
