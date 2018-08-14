@@ -48,8 +48,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
     private static final String URL_RECORD = "http://"+IP+":8080/airquayRowing/main/recordUpload";
     private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
     updateRaceinfo Update;
-    final static int IDLE = 0;
-    final static int RUNNING = 1;
     private ProgressDialog pDialog;
     File file = Environment.getRootDirectory();
     final String RECORDED_FILE = Environment.getExternalStorageDirectory().getAbsolutePath() + String.format("/recorded.mp4");
@@ -235,6 +233,12 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    String getReset()
+    {
+        String sEll=String.format("%02d:%02d:%02d.%02d",00,00,00,00) ;
+        return sEll;
     }
 
     public void onBackPressed() {
@@ -470,14 +474,6 @@ public class TimingHut_500Activity extends AppCompatActivity {
         private String data;
         String sendMsg;
 
-       /* protected void onPreExecute() {
-            pDialog = new ProgressDialog(TimingHut_500Activity.this);
-            pDialog.setMessage("검색중입니다...");
-            pDialog.setCancelable(false);
-            pDialog.show();
-            super.onPreExecute();
-        }*/
-
         protected Void doInBackground(Void... param) {
             while (!isCancelled()) {
                 try {
@@ -536,7 +532,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     finish();
                 } catch (IOException io) {
                     if(!isCancelled())
-                        noConfirm();
+                        //noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
                     if(!isCancelled())
@@ -584,6 +580,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
                     }
                 });
@@ -592,8 +589,8 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        raceState.setText(" 2분전 ");
-                    }
+                        raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
+                        raceState.setText(" 2 분전 ");                    }
                 });
             }
             else if(progress[0].equals("1")){
@@ -636,6 +633,12 @@ public class TimingHut_500Activity extends AppCompatActivity {
                 }catch(Exception e){
                     e.printStackTrace();
                 }
+            }else if(progress[0].equals("3")){
+                raceState.setBackground(getDrawable( R.drawable.end_state_border));
+                raceState.setText(" 대기 ");
+            }
+            else if(progress[0].equals("4")) {
+                ongoingTime.setText(getReset());
             }
             else{
                 run();

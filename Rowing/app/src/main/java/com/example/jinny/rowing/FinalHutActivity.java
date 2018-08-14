@@ -51,8 +51,6 @@ public class FinalHutActivity extends AppCompatActivity {
     private static final String URL_ADDRESS_FINISHTIME="http://"+IP+":8080/airquayRowing/main/finishTimeSend";//종료 시간 전송 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     updateRaceinfo Update;
-    final static int IDLE = 0;
-    final static int RUNNING = 1;
     private ProgressDialog pDialog;
     File file = Environment.getRootDirectory();
     final String RECORDED_FILE = Environment.getExternalStorageDirectory().getAbsolutePath() + String.format("/recorded.mp4");
@@ -73,7 +71,6 @@ public class FinalHutActivity extends AppCompatActivity {
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
     ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
-    long hBaseTime, hPauseTime;
     int splitCount = 1;
     int raceNum1;
     String records[] = new String[6];
@@ -434,7 +431,10 @@ public class FinalHutActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-
+    String getReset() {
+        String sEll = String.format("%02d:%02d:%02d.%02d", 00, 00, 00, 00);
+        return sEll;
+    }
 
 
 
@@ -508,7 +508,7 @@ public class FinalHutActivity extends AppCompatActivity {
         String sendMsg;
 
        /* protected void onPreExecute() {
-            pDialog = new ProgressDialog(FinalHutActivity.this);
+            pDialog = new ProgressDialog(TimingHut_500Activity.this);
             pDialog.setMessage("검색중입니다...");
             pDialog.setCancelable(false);
             pDialog.show();
@@ -573,7 +573,7 @@ public class FinalHutActivity extends AppCompatActivity {
                     finish();
                 } catch (IOException io) {
                     if(!isCancelled())
-                        noConfirm();
+                       // noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
                     if(!isCancelled())
@@ -621,16 +621,16 @@ public class FinalHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        raceState.setText(" 경기 종료 ");
-                    }
+                        raceState.setBackground(getDrawable(R.drawable.end_state_border));
+                        raceState.setText(" 경기 종료 ");                    }
                 });
             }
             else if(progress[0].equals("2")){
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        raceState.setText(" 2분전 ");
-                    }
+                        raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
+                        raceState.setText(" 2 분전 ");                    }
                 });
             }
             else if(progress[0].equals("1")){
@@ -673,6 +673,12 @@ public class FinalHutActivity extends AppCompatActivity {
                 }catch(Exception e){
                     e.printStackTrace();
                 }
+            }else if(progress[0].equals("3")){
+                raceState.setBackground(getDrawable( R.drawable.end_state_border));
+                raceState.setText(" 대기 ");
+            }
+            else if(progress[0].equals("4")) {
+                ongoingTime.setText(getReset());
             }
             else{
                 run();

@@ -35,7 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class StartingHutActivity extends AppCompatActivity {
-    public static final String IP="172.30.1.30";
+    public static final String IP="192.168.254.102";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
@@ -51,7 +51,6 @@ public class StartingHutActivity extends AppCompatActivity {
     Button goButton, twoMinutesButton, data, Reset_Button;
     String  Onoff, race_num, StartTime, hEll;
 
-    long baseTime;
     int tStatus = IDLE;
     int tempNumber;
     String LoadData, pastTime;
@@ -106,7 +105,6 @@ public class StartingHutActivity extends AppCompatActivity {
                     ongoingTime.setText(getReset());
                     twoMinutesButton.setEnabled(true);
                     goButton.setEnabled(false);
-                    data.setEnabled(false);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
@@ -134,16 +132,7 @@ public class StartingHutActivity extends AppCompatActivity {
                             finish();
                             e.printStackTrace();
                         }
-
                         Toast.makeText(getApplicationContext(), "완료되었습니다.", Toast.LENGTH_LONG).show();
-                        raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.ongoing_state_border));
-                        raceState.setText(" 경기중 ");
-                        twoMinutesButton.setEnabled(false);
-                        baseTime = SystemClock.elapsedRealtime();
-                        goButton.setText(" False ");
-                        tStatus = RUNNING;
-                        Log.i("IDLE", "IDLE");
-
                         break;
 
                     case RUNNING://경기중 상태 -> false start
@@ -170,13 +159,6 @@ public class StartingHutActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-                        raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.end_state_border));
-                        raceState.setText(" 대기 ");
-                        Reset_Button.setEnabled(true);
-                        goButton.setEnabled(false);
-                        goButton.setText(" Start ");
-                        tStatus = PAUSE;
-                        Log.i("RUNNING", "RUNNING");
                         break;
 
                     case PAUSE://FalseStart 상태 -> restart
@@ -191,14 +173,6 @@ public class StartingHutActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-                        long now = SystemClock.elapsedRealtime();
-                        baseTime = (now);
-                        raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.ongoing_state_border));
-                        raceState.setText(" 경기중 ");
-                        goButton.setText(" False ");
-                        Reset_Button.setEnabled(false);
-                        tStatus = RUNNING;
-                        Log.i("PAUSE", "PAUSE");
                         break;
                 }
                 break;
@@ -215,10 +189,6 @@ public class StartingHutActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                goButton.setEnabled(true);
-                raceState.setBackground(ContextCompat.getDrawable(this, R.drawable.two_minutes_state_border));
-                raceState.setText(" 2 분전 ");
-                raceState.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.Reset_Button://Reset버튼 누를 때
@@ -232,18 +202,7 @@ public class StartingHutActivity extends AppCompatActivity {
                     finish();
                     e.printStackTrace();
                 }
-                ongoingTime.setText(getReset());
-                goButton.setEnabled(true);
-
         }
-    }
-
-    String getElapse()
-    {
-        long now = SystemClock.elapsedRealtime();
-        long ell = now - baseTime;
-        String sEll = String.format("%02d:%02d:%02d.%02d", ell/1000/360, ell / 1000 / 60, (ell / 1000) % 60, (ell % 1000) / 10);
-        return sEll;
     }
 
     String getReset()
@@ -396,7 +355,7 @@ public class StartingHutActivity extends AppCompatActivity {
     }
 
 
-    class StartTimeSender extends AsyncTask<Void, Void, Void> //시작 랩 타임 전송
+    class StartTimeSender extends AsyncTask<Void, Void, Void> //시작 랩 타임 전송, Onoff=1
     {
         private String sendMsg;
         private String data;
@@ -669,7 +628,7 @@ public class StartingHutActivity extends AppCompatActivity {
                     finish();
                 } catch (IOException io) {
                     if(!isCancelled())
-                        noConfirm();
+                        //noConfirm();
                     io.printStackTrace();
                 } catch (JSONException e) {
                     if(!isCancelled())
@@ -766,17 +725,32 @@ public class StartingHutActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            tStatus = RUNNING;
                             raceState.setVisibility(View.VISIBLE);
                             raceState.setText(" 경기중 ");
                             raceState.setBackground(getDrawable(R.drawable.ongoing_state_border));
                             twoMinutesButton.setEnabled(false);
                             goButton.setText(" False ");
                             ongoingTime.setText(hEll);
+
                         }
                     });
                 }catch(Exception e){
                     e.printStackTrace();
                 }
+            }
+            else if(progress[0].equals("3")){
+                raceState.setBackground(getDrawable( R.drawable.end_state_border));
+                raceState.setText(" 대기 ");
+                Reset_Button.setEnabled(true);
+                goButton.setEnabled(false);
+                goButton.setText(" Start ");
+                tStatus = PAUSE;
+            }
+            else if(progress[0].equals("4")) {
+                ongoingTime.setText(getReset());
+                goButton.setEnabled(true);
             }
             else{
                 run();
