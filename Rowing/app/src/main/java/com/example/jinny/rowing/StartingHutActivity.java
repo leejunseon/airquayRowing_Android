@@ -35,7 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class StartingHutActivity extends AppCompatActivity {
-    public static final String IP="192.168.254.102";
+    public static final String IP="192.168.254.176";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
@@ -51,8 +51,8 @@ public class StartingHutActivity extends AppCompatActivity {
     Button goButton, twoMinutesButton, data, Reset_Button;
     String  Onoff, race_num, StartTime, hEll;
 
-    int tStatus = IDLE;
-    int tempNumber;
+    int tStatus;
+    int tempNumber;//현재 경기번호
     String LoadData, pastTime;
     String[] timeTemp,timeSplit;
     boolean flag;
@@ -100,11 +100,6 @@ public class StartingHutActivity extends AppCompatActivity {
                     getRaceNum RaceNum = new getRaceNum();//다음 경기 조회
                     RaceNum.setData(raceDate.getText().toString());
                     RaceNum.execute();
-
-                    raceState.setVisibility(View.INVISIBLE);
-                    ongoingTime.setText(getReset());
-                    twoMinutesButton.setEnabled(true);
-                    goButton.setEnabled(false);
                 } catch (Exception e) {
                     Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
@@ -246,7 +241,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
 
 
-    class getRaceNum extends AsyncTask<Void, String, Void>//다음 경기 유무 확인
+    class getRaceNum extends AsyncTask<Void, String, Void>//다음 경기 유무 확인, 있을 경우 경기넘버 +1
     {
         private String data;
         String sendMsg;
@@ -679,6 +674,11 @@ public class StartingHutActivity extends AppCompatActivity {
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
                         raceState.setVisibility(View.VISIBLE);
+                        tStatus=IDLE;
+                        twoMinutesButton.setEnabled(true);
+                        goButton.setText(" Start ");
+                        ongoingTime.setText(getReset());
+                        goButton.setEnabled(false);
                     }
                 });
             }
@@ -733,7 +733,7 @@ public class StartingHutActivity extends AppCompatActivity {
                             twoMinutesButton.setEnabled(false);
                             goButton.setText(" False ");
                             ongoingTime.setText(hEll);
-
+                            Reset_Button.setEnabled(false);
                         }
                     });
                 }catch(Exception e){

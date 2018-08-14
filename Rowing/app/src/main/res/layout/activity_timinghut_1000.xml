@@ -977,6 +977,24 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitXY"
                         android:src="@drawable/arrow" />
+
+                    <TextView
+                        android:id="@+id/margin_next"
+                        android:layout_width="35dp"
+                        android:layout_height="63dp"
+                        android:layout_toRightOf="@+id/upload_button"
+                        android:padding="10dp" />
+
+                    <ImageButton
+                        android:id="@+id/next_button"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:layout_below="@+id/margin_next"
+                        android:layout_toRightOf="@+id/margin_next"
+                        android:clickable="false"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/arrow_next" />
                 </RelativeLayout>
 
                 <RelativeLayout
@@ -985,7 +1003,7 @@
 
                     <TextView
                         android:id="@+id/margin_lap"
-                        android:layout_width="360dp"
+                        android:layout_width="200dp"
                         android:layout_height="60dp"
                         android:padding="10dp" />
 

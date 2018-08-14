@@ -26,7 +26,8 @@
         <activity android:name=".TimingHut_500Activity" />
         <activity android:name=".TimingHut_1000Activity" />
         <activity android:name=".TimingHut_1500Activity" />
-        <activity android:name=".FinalHutActivity"></activity>
+        <activity android:name=".FinalHutActivity">
+        </activity>
     </application>
 
 </manifest>

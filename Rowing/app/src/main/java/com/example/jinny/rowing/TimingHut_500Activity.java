@@ -67,7 +67,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
     Integer[] menuIds = {R.id.bow_number_list_1, R.id.bow_number_list_2, R.id.bow_number_list_3, R.id.bow_number_list_4, R.id.bow_number_list_5, R.id.bow_number_list_6};
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
-    ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
+    ImageButton nextraceButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     long hBaseTime, hPauseTime;
     int splitCount = 1;
     int raceNum1;
@@ -98,6 +98,8 @@ public class TimingHut_500Activity extends AppCompatActivity {
         playButton = (ImageButton) findViewById(R.id.play_button);//재생 버튼
         pauseButton = (ImageButton) findViewById(R.id.pause_button);//정지 버튼
         uploadButton = (ImageButton) findViewById(R.id.upload_button);//업로드 버튼
+        nextraceButton=(ImageButton)findViewById(R.id.next_button);
+        nextraceButton.setEnabled(false);
         refreshButton = (ImageButton) findViewById(R.id.refresh_button);//초기화 버튼
         confirmConnection = (TextView) findViewById(R.id.hut_confirm_connection);//맨 왼쪽 상단 작은 네모
         position = (TextView) findViewById(R.id.hut_position);//작은 네모 옆에 ~m
@@ -197,6 +199,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //경기 기록 업로드 버튼
+                nextraceButton.setEnabled(true);
                 String hutPosition = position.getText().toString();
                 Toast.makeText(getApplicationContext(), "데이터 업로드 중입니다.", Toast.LENGTH_LONG).show();
                 try {

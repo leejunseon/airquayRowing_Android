@@ -70,7 +70,7 @@ public class FinalHutActivity extends AppCompatActivity {
     Integer[] menuIds = {R.id.bow_number_list_1, R.id.bow_number_list_2, R.id.bow_number_list_3, R.id.bow_number_list_4, R.id.bow_number_list_5, R.id.bow_number_list_6};
     TextView confirmConnection, raceState, currentDate, currentTime, ongoingTime, firstRecord, secondRecord, thirdRecord, fourthRecord, fifthRecord, sixthRecord, raceNumber, position;
     Button lapButton;
-    ImageButton stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
+    ImageButton nextraceButton, stopButton, recordButton, playButton, pauseButton, uploadButton, refreshButton;
     int splitCount = 1;
     int raceNum1;
     String records[] = new String[6];
@@ -100,6 +100,8 @@ public class FinalHutActivity extends AppCompatActivity {
         playButton = (ImageButton) findViewById(R.id.play_button);//재생 버튼
         pauseButton = (ImageButton) findViewById(R.id.pause_button);//정지 버튼
         uploadButton = (ImageButton) findViewById(R.id.upload_button);//업로드 버튼
+        nextraceButton=(ImageButton)findViewById(R.id.next_button);
+        nextraceButton.setEnabled(false);
         refreshButton = (ImageButton) findViewById(R.id.refresh_button);//초기화 버튼
         stopButton=(ImageButton)findViewById(R.id.stop_button);//종료 버튼
         confirmConnection = (TextView) findViewById(R.id.hut_confirm_connection);//맨 왼쪽 상단 작은 네모
@@ -211,7 +213,6 @@ public class FinalHutActivity extends AppCompatActivity {
 
                 pastTime=ongoingTime.getText().toString();
                 String[] timeTemp=pastTime.split(":|[.]");
-                Log.i("asdfasdfasdf",timeTemp[0]+"----"+timeTemp[1]+"asdfasdf"+timeTemp[2]);
                 String[] timeSplit=timeTemp[2].split(".");
                 try {
                     FinalHutActivity.StopTimeSender finishTimeSender = new FinalHutActivity.StopTimeSender();
@@ -232,6 +233,7 @@ public class FinalHutActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //경기 기록 업로드 버튼
+                nextraceButton.setEnabled(true);
                 String hutPosition = position.getText().toString();
                 Toast.makeText(getApplicationContext(), "데이터 업로드 중입니다.", Toast.LENGTH_LONG).show();
                 try {
