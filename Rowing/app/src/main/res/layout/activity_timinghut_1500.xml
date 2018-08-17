@@ -991,7 +991,6 @@
                         android:layout_height="150dp"
                         android:layout_below="@+id/margin_next"
                         android:layout_toRightOf="@+id/margin_next"
-                        android:clickable="false"
                         android:background="@android:color/transparent"
                         android:scaleType="fitXY"
                         android:src="@drawable/arrow_next" />

@@ -75,7 +75,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String  Onoff, race_num, StartTime;
+    String  Onoff, race_num, day_race_num,StartTime,FinishTime;
     String hEll;
     boolean TimerOnoff;
     int tempNumber;
@@ -103,7 +103,6 @@ public class TimingHut_1000Activity extends AppCompatActivity {
         pauseButton = (ImageButton) findViewById(R.id.pause_button);//정지 버튼
         uploadButton = (ImageButton) findViewById(R.id.upload_button);//업로드 버튼
         nextraceButton=(ImageButton)findViewById(R.id.next_button);
-        nextraceButton.setEnabled(false);
         refreshButton = (ImageButton) findViewById(R.id.refresh_button);//초기화 버튼
         confirmConnection = (TextView) findViewById(R.id.hut_confirm_connection);//맨 왼쪽 상단 작은 네모
         position = (TextView) findViewById(R.id.hut_position);//작은 네모 옆에 ~m
@@ -204,7 +203,6 @@ public class TimingHut_1000Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //경기 기록 업로드 버튼
-                nextraceButton.setEnabled(true);
                 String hutPosition = position.getText().toString();
                 Toast.makeText(getApplicationContext(), "데이터 업로드 중입니다.", Toast.LENGTH_LONG).show();
                 try {
@@ -215,7 +213,10 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                         a.setData(temp, Integer.parseInt(race_num),i+1);
                         a.execute(hutPosition, timeTemp[0], timeTemp[1], timeTemp[2], timeTemp[3]);
                     }
-                } catch (Exception e) {
+                }catch(NullPointerException e){
+                    Toast.makeText(TimingHut_1000Activity.this, "기록이 입력되지 않았습니다.", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }catch (Exception e) {
                     Toast.makeText(TimingHut_1000Activity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
                     finish();
                     e.printStackTrace();
@@ -257,6 +258,48 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                 }
             }
         });
+
+        lapButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                //스톱워치 랩 기능 구현
+                String split = ongoingTime.getText().toString();
+                switch (splitCount) {
+                    case 1:
+                        firstRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 2:
+                        secondRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 3:
+                        thirdRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 4:
+                        fourthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 5:
+                        fifthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 6:
+                        sixthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    default:
+                        break;
+                }
+                records[0] = firstRecord.getText().toString();
+                records[1] = secondRecord.getText().toString();
+                records[2] = thirdRecord.getText().toString();
+                records[3] = fourthRecord.getText().toString();
+                records[4] = fifthRecord.getText().toString();
+                records[5] = sixthRecord.getText().toString();
+            }
+        } );
+
     }
 
     String getReset()
@@ -371,45 +414,6 @@ public class TimingHut_1000Activity extends AppCompatActivity {
         };
         Thread thread = new Thread(task);
         thread.start();//스레드 시작
-    }
-
-    public void hutOnClick(View v) {
-        //스톱워치 랩 기능 구현
-        String split = ongoingTime.getText().toString();
-        switch (splitCount) {
-            case 1:
-                firstRecord.setText(split);
-                splitCount++;
-                break;
-            case 2:
-                secondRecord.setText(split);
-                splitCount++;
-                break;
-            case 3:
-                thirdRecord.setText(split);
-                splitCount++;
-                break;
-            case 4:
-                fourthRecord.setText(split);
-                splitCount++;
-                break;
-            case 5:
-                fifthRecord.setText(split);
-                splitCount++;
-                break;
-            case 6:
-                sixthRecord.setText(split);
-                splitCount++;
-                break;
-            default:
-                break;
-        }
-        records[0] = firstRecord.getText().toString();
-        records[1] = secondRecord.getText().toString();
-        records[2] = thirdRecord.getText().toString();
-        records[3] = fourthRecord.getText().toString();
-        records[4] = fifthRecord.getText().toString();
-        records[5] = sixthRecord.getText().toString();
     }
 
     //노란버튼 눌렀을 때, 리스트 꺼내는 메소드
@@ -600,7 +604,20 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                         @Override
                         public void run()
                         {
-                            raceNumber.setText(Integer.toString(tempNumber+1));
+                            raceNumber.setText(Integer.toString(Integer.parseInt(day_race_num)+1));
+                            firstRecord.setText("00:00:00.00");
+                            secondRecord.setText("00:00:00.00");
+                            thirdRecord.setText("00:00:00.00");
+                            fourthRecord.setText("00:00:00.00");
+                            fifthRecord.setText("00:00:00.00");
+                            sixthRecord.setText("00:00:00.00");
+                            for (int i = 0; i < bowNumButton.length; i++)
+                                bowNumButton[i].setText("0");
+                            for (int i = 0; i < bowNumSelectButton.length; i++) {
+                                bowNumSelectButton[i].setEnabled(true);
+                                bowNumSelectButton[i].setBackground(getDrawable(R.drawable.button_border_2));
+                            }
+                            splitCount=1;
                         }
                     });
                 } else {
@@ -694,16 +711,11 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                     JSONObject sObject = new JSONObject(page);
                     JSONArray sArray = sObject.getJSONArray("dataSend");
 
+
                     //경기번호
                     sObject = sArray.getJSONObject(0);
                     race_num = sObject.getString("race_num");
                     tempNumber=Integer.parseInt(race_num);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            raceNumber.setText(race_num);
-                        }
-                    });
 
                     //경기 상태
                     sObject = sArray.getJSONObject(1);
@@ -713,6 +725,20 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                     //시작시간
                     sObject = sArray.getJSONObject(2);
                     StartTime = sObject.getString("StartTime");
+
+                    //종료시간
+                    sObject=sArray.getJSONObject(3);
+                    FinishTime=sObject.getString("FinishTime");
+
+                    //해당 날짜 레이스 번호
+                    sObject=sArray.getJSONObject(4);
+                    day_race_num=sObject.getString("day_race_num");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            raceNumber.setText(day_race_num);
+                        }
+                    });
 
                     conn.disconnect();
                     Thread.sleep(1000);
@@ -777,6 +803,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                     @Override
                     public void run() {
                         TimerOnoff=false;
+                        ongoingTime.setText(FinishTime);
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
                     }
@@ -807,6 +834,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
             }else if(progress[0].equals("3")){
                 raceState.setBackground(getDrawable( R.drawable.end_state_border));
                 raceState.setText(" 대기 ");
+                TimerOnoff=false;
             }
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
@@ -821,5 +849,6 @@ public class TimingHut_1000Activity extends AppCompatActivity {
         }
 
     }
+
 
 }
