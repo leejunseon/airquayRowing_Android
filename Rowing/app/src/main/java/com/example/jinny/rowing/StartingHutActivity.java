@@ -345,14 +345,7 @@ public class StartingHutActivity extends AppCompatActivity {
                 sObject = sArray.getJSONObject(0);
                 if (sObject.getString("key").equals("ok")) {
                     LoadData = sObject.getString("key");
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            raceNumber.setText(Integer.toString(++tempNumber));
-                        }
-                    });
+                    tempNumber++;
                 } else {
                    run();
                 }
