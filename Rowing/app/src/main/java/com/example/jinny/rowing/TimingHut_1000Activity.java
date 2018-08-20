@@ -803,6 +803,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                     @Override
                     public void run() {
                         TimerOnoff=false;
+                        raceState.setVisibility(View.VISIBLE);
                         ongoingTime.setText(FinishTime);
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
@@ -813,6 +814,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        raceState.setVisibility(View.VISIBLE);
                         raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
                         raceState.setText(" 2 분전 ");                    }
                 });
@@ -838,6 +840,9 @@ public class TimingHut_1000Activity extends AppCompatActivity {
             }
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
+            }
+            else if(progress[0].equals("5")) {
+                raceState.setVisibility(View.INVISIBLE);
             }
             else{
                 run();

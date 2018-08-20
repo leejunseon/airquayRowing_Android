@@ -718,6 +718,7 @@ public class FinalHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        raceState.setVisibility(View.VISIBLE);
                         TimerOnoff=false;
                         ongoingTime.setText(FinishTime);
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
@@ -729,6 +730,7 @@ public class FinalHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        raceState.setVisibility(View.VISIBLE);
                         raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
                         raceState.setText(" 2 분전 ");                    }
                 });
@@ -754,6 +756,9 @@ public class FinalHutActivity extends AppCompatActivity {
             }
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
+            }
+            else if(progress[0].equals("5")) {
+                raceState.setVisibility(View.INVISIBLE);
             }
             else{
                 run();

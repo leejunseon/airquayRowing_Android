@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import static android.view.View.INVISIBLE;
+
 public class StartingHutActivity extends AppCompatActivity {
     public static final String IP="192.168.254.140";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
@@ -54,7 +56,7 @@ public class StartingHutActivity extends AppCompatActivity {
 
     int tStatus;
     int tempNumber;//현재 경기번호
-    String LoadData, pastTime;
+    String LoadData, pastTime,race;
     String[] timeTemp,timeSplit;
     boolean flag,TimerOnoff;
     private ProgressDialog pDialog;
@@ -77,7 +79,7 @@ public class StartingHutActivity extends AppCompatActivity {
         twoMinutesButton = (Button) findViewById(R.id.two_minute_button);//2분전
         confirmConnection = (TextView) findViewById(R.id.confirm_connection);//왼쪽상단 초록색 네모
 
-        raceState.setVisibility(View.INVISIBLE);
+        raceState.setVisibility(INVISIBLE);
 
         showTime();
         Timer();
@@ -92,7 +94,6 @@ public class StartingHutActivity extends AppCompatActivity {
             finish();
             e.printStackTrace();
         }
-
 
         data.setOnClickListener(new View.OnClickListener() //다음경기 버튼 눌렀을 때의 event
         {
@@ -687,11 +688,7 @@ public class StartingHutActivity extends AppCompatActivity {
                     if(!isCancelled())
                         //noConfirm();
                     io.printStackTrace();
-                } catch (JSONException e) {
-                    if(!isCancelled())
-                        noConfirm();
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+                } catch (JSONException | InterruptedException e) {
                     if(!isCancelled())
                         noConfirm();
                     e.printStackTrace();
@@ -739,8 +736,8 @@ public class StartingHutActivity extends AppCompatActivity {
                     public void run() {
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
-                        ongoingTime.setText(FinishTime);
                         raceState.setVisibility(View.VISIBLE);
+                        ongoingTime.setText(FinishTime);
                         tStatus=IDLE;
                         TimerOnoff=false;
                         twoMinutesButton.setEnabled(true);
@@ -792,6 +789,9 @@ public class StartingHutActivity extends AppCompatActivity {
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
                 goButton.setEnabled(true);
+            }
+            else if(progress[0].equals("5")) {
+                raceState.setVisibility(View.INVISIBLE);
             }
             else{
                 run();
