@@ -52,7 +52,7 @@ public class StartingHutActivity extends AppCompatActivity {
     SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
     TextView raceDate, currentTime, ongoingTime, raceState, raceNumber, confirmConnection;
     Button goButton, twoMinutesButton, data, Reset_Button;
-    String  Onoff, race_num, day_race_num,StartTime, FinishTime,hEll;
+    String  Onoff, race_num, day_race_num,StartTime, FinishTime,hEll,fiveNull;
 
     int tStatus;
     int tempNumber;//현재 경기번호
@@ -676,6 +676,10 @@ public class StartingHutActivity extends AppCompatActivity {
                         }
                     });
 
+                    //경기 종료 or 경기 진행 전
+                    sObject=sArray.getJSONObject(5);
+                    fiveNull=sObject.getString("five_null");
+
                     conn.disconnect();
                     Thread.sleep(1000);
 
@@ -736,7 +740,12 @@ public class StartingHutActivity extends AppCompatActivity {
                     public void run() {
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
                         raceState.setText(" 경기 종료 ");
-                        raceState.setVisibility(View.VISIBLE);
+                        if(fiveNull.equals("true")){
+                            raceState.setVisibility(View.INVISIBLE);
+                        }
+                        else {
+                            raceState.setVisibility(View.VISIBLE);
+                        }
                         ongoingTime.setText(FinishTime);
                         tStatus=IDLE;
                         TimerOnoff=false;
@@ -789,9 +798,6 @@ public class StartingHutActivity extends AppCompatActivity {
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
                 goButton.setEnabled(true);
-            }
-            else if(progress[0].equals("5")) {
-                raceState.setVisibility(View.INVISIBLE);
             }
             else{
                 run();

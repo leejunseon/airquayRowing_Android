@@ -78,7 +78,7 @@ public class FinalHutActivity extends AppCompatActivity {
     int raceNum1;
     String records[] = new String[6];
     String pastTime = null, stringRaceNum = null, stringPosition = null;
-    String  Onoff, race_num, StartTime, day_race_num,FinishTime, split;
+    String  Onoff, race_num, StartTime, day_race_num,FinishTime, split,fiveNull;
     String hEll;
     boolean TimerOnoff;
     int tempNumber;
@@ -656,6 +656,11 @@ public class FinalHutActivity extends AppCompatActivity {
                             raceNumber.setText(day_race_num);
                         }
                     });
+
+                    //경기 종료 or 경기 진행 전
+                    sObject=sArray.getJSONObject(5);
+                    fiveNull=sObject.getString("five_null");
+
                     conn.disconnect();
                     Thread.sleep(1000);
 
@@ -718,7 +723,12 @@ public class FinalHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        raceState.setVisibility(View.VISIBLE);
+                        if(fiveNull.equals("true")){
+                            raceState.setVisibility(View.INVISIBLE);
+                        }
+                        else {
+                            raceState.setVisibility(View.VISIBLE);
+                        }
                         TimerOnoff=false;
                         ongoingTime.setText(FinishTime);
                         raceState.setBackground(getDrawable(R.drawable.end_state_border));
@@ -756,9 +766,6 @@ public class FinalHutActivity extends AppCompatActivity {
             }
             else if(progress[0].equals("4")) {
                 ongoingTime.setText(getReset());
-            }
-            else if(progress[0].equals("5")) {
-                raceState.setVisibility(View.INVISIBLE);
             }
             else{
                 run();
