@@ -831,6 +831,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            raceState.setVisibility(View.VISIBLE);
                             TimerOnoff=true;
                             raceState.setText(" 경기중 ");
                             raceState.setBackground(getDrawable(R.drawable.ongoing_state_border));
@@ -840,6 +841,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }else if(progress[0].equals("3")){
+                raceState.setVisibility(View.VISIBLE);
                 raceState.setBackground(getDrawable( R.drawable.end_state_border));
                 raceState.setText(" 대기 ");
                 TimerOnoff=false;

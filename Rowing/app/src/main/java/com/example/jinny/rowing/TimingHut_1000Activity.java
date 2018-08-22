@@ -844,6 +844,7 @@ public class TimingHut_1000Activity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }else if(progress[0].equals("3")){
+                raceState.setVisibility(View.VISIBLE);
                 raceState.setBackground(getDrawable( R.drawable.end_state_border));
                 raceState.setText(" 대기 ");
                 TimerOnoff=false;

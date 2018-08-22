@@ -38,7 +38,7 @@ import java.util.Locale;
 import static android.view.View.INVISIBLE;
 
 public class StartingHutActivity extends AppCompatActivity {
-    public static final String IP="13.209.161.83";
+    public static final String IP="192.168.254.140";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
@@ -791,6 +791,7 @@ public class StartingHutActivity extends AppCompatActivity {
             else if(progress[0].equals("3")){
                 raceState.setBackground(getDrawable( R.drawable.end_state_border));
                 raceState.setText(" 대기 ");
+                raceState.setVisibility(View.VISIBLE);
                 Reset_Button.setEnabled(true);
                 goButton.setEnabled(false);
                 goButton.setText(" Start ");
