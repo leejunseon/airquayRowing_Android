@@ -635,6 +635,8 @@ public class StartingHutActivity extends AppCompatActivity {
                     osw.flush();
 
                     conn.connect();
+                   /* int i=  conn.getResponseCode();
+                    InputStream is = conn.getErrorStream();*/
                     InputStream is = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                     String line = "";

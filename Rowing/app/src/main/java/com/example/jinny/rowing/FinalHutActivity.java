@@ -740,6 +740,7 @@ public class FinalHutActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        ongoingTime.setText(FinishTime);
                         raceState.setVisibility(View.VISIBLE);
                         raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
                         raceState.setText(" 2 분전 ");                    }

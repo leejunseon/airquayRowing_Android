@@ -489,6 +489,8 @@ public class TimingHut_500Activity extends AppCompatActivity {
 
 
 
+
+
     class CustomTask extends AsyncTask<String, Void, Void> {
         private int raceNum2, bowNum, rank;
         String sendMsg;
@@ -818,6 +820,7 @@ public class TimingHut_500Activity extends AppCompatActivity {
                     @Override
                     public void run() {
                         raceState.setVisibility(View.VISIBLE);
+                        ongoingTime.setText(FinishTime);
                         raceState.setBackground(getDrawable(R.drawable.two_minutes_state_border));
                         raceState.setText(" 2 분전 ");                    }
                 });
