@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.media.MediaRecorder;
 import android.media.MediaPlayer;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -300,6 +301,58 @@ public class TimingHut_1000Activity extends AppCompatActivity {
             }
         } );
 
+    }
+
+    //외부장치입력
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        //초록 - 2분전/Start
+        if(event.getKeyCode() == KeyEvent.KEYCODE_A)
+        {
+            if(event.getAction() == KeyEvent.ACTION_DOWN)
+            {
+                //스톱워치 랩 기능 구현
+                String split = ongoingTime.getText().toString();
+                switch (splitCount) {
+                    case 1:
+                        firstRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 2:
+                        secondRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 3:
+                        thirdRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 4:
+                        fourthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 5:
+                        fifthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    case 6:
+                        sixthRecord.setText(split);
+                        splitCount++;
+                        break;
+                    default:
+                        break;
+                }
+                records[0] = firstRecord.getText().toString();
+                records[1] = secondRecord.getText().toString();
+                records[2] = thirdRecord.getText().toString();
+                records[3] = fourthRecord.getText().toString();
+                records[4] = fifthRecord.getText().toString();
+                records[5] = sixthRecord.getText().toString();
+            }
+            return true;
+        }
+
+
+        return super.dispatchKeyEvent(event);
     }
 
     String getReset()

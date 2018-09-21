@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -37,17 +38,14 @@ import java.util.Locale;
 
 import static android.view.View.INVISIBLE;
 
-public class StartingHutActivity extends AppCompatActivity {
-    public static final String IP="13.209.161.83";
+public class StartingHutActivity extends AppCompatActivity  {
+    public static final String IP="172.30.1.51";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
     private static final String URL_ADDRESS_GET_RACE_NUMBER = "http://"+IP+":8080/airquayRowing/main/getRaceNum";//경기 유무 확인
     private static final String URL_UPDATE_RACEINFO="http://"+IP+":8080/airquayRowing/main/updateRaceinfo";
     updateRaceinfo Update;
-    final static int IDLE = 0;
-    final static int RUNNING = 1;
-    final static int PAUSE = 2;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
     TextView raceDate, currentTime, ongoingTime, raceState, raceNumber, confirmConnection;
@@ -55,11 +53,21 @@ public class StartingHutActivity extends AppCompatActivity {
     String  Onoff, race_num, day_race_num,StartTime, FinishTime,hEll,fiveNull;
 
     int tStatus;
+    final static int IDLE = 0;
+    final static int RUNNING = 1;
+    final static int PAUSE = 2;
+
+    int ButtonStatus;
+    final static int None=0;
+    final static int Ready=1;
+
     int tempNumber;//현재 경기번호
     String LoadData, pastTime,race;
     String[] timeTemp,timeSplit;
     boolean flag,TimerOnoff;
     private ProgressDialog pDialog;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +119,77 @@ public class StartingHutActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    //외부장치입력
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        //초록 - 2분전/Start
+        if(event.getKeyCode() == KeyEvent.KEYCODE_A)
+        {
+            if(event.getAction() == KeyEvent.ACTION_DOWN)
+            {
+                if(ButtonStatus==None) {
+                    try {
+                        SetOnOff twominutes = new SetOnOff();
+                        twominutes.setData("2");
+                        twominutes.execute();
+                    } catch (Exception e) {
+                        Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                        finish();
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(getApplicationContext(), "2분전.", Toast.LENGTH_LONG).show();
+                    ButtonStatus=Ready;
+                }
+                else if(ButtonStatus==Ready){
+                    try {
+                        StartTimeSender startTimeSend = new StartTimeSender();
+                        startTimeSend.setData(currentTime.getText().toString());
+                        startTimeSend.execute();
+                    } catch (Exception e) {
+                        Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                        finish();
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(getApplicationContext(), "시작.", Toast.LENGTH_LONG).show();
+                    ButtonStatus=None;
+                }
+            }
+            return true;
+        }
+        //빨강 - FalseStart
+        if(event.getKeyCode() == KeyEvent.KEYCODE_A)
+        {
+            if(event.getAction() == KeyEvent.ACTION_DOWN)
+            {
+                try {
+                    SetOnOff falseStart = new SetOnOff();
+                    falseStart.setData("3");
+                    falseStart.execute();
+                } catch (Exception e) {
+                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                    finish();
+                    e.printStackTrace();
+                }
+
+                pastTime=ongoingTime.getText().toString();
+                timeTemp=pastTime.split(":|[.]");
+                timeSplit=timeTemp[2].split(".");
+                try {
+                    StopTimeSender falseTimeSender = new StopTimeSender();
+                    falseTimeSender.execute(timeTemp[0],timeTemp[1],timeTemp[2],timeTemp[3]);
+                } catch (Exception e) {
+                    Toast.makeText(StartingHutActivity.this, "서버와 연결이 되지 않습니다.", Toast.LENGTH_LONG).show();
+                    finish();
+                    e.printStackTrace();
+                }
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
 
     public void mOnClick(View v) //2분전 or Start or 종료 or Reset 버튼 눌렀을 때의 event
     {
