@@ -39,7 +39,7 @@ import java.util.Locale;
 import static android.view.View.INVISIBLE;
 
 public class StartingHutActivity extends AppCompatActivity  {
-    public static final String IP="172.30.1.51";
+    public static final String IP="13.209.161.83";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
