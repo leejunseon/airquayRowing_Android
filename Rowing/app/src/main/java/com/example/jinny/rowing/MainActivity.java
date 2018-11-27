@@ -8,7 +8,7 @@ import android.widget.Button;
 
 /**
  * Created by jinny on 2018-02-13.
- * Upgraded by junseon
+ * Upgraded by junseon on 2018-11-27.
  */
 
 public class MainActivity extends Activity{
