@@ -417,7 +417,8 @@ public class FinalHutActivity extends AppCompatActivity {
                         String min = Long.toString(Long.parseLong(totalmin) % 60);
                         if (Long.parseLong(min) < 10)
                             min = "0" + min;
-                        hEll = hour + ":" + min + ":" + sec + "." + tinysec;
+                        //hEll = hour + ":" + min + ":" + sec + "." + tinysec; // -> 12시~13시 사이에 측정 시 hour가 12로 되는 오류가 있음.
+                        hEll = "00" + ":" + min + ":" + sec + "." + tinysec;
 
                         ongoingTime.setText(hEll);
                     }

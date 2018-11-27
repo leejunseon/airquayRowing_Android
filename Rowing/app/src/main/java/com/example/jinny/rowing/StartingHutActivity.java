@@ -39,7 +39,7 @@ import java.util.Locale;
 import static android.view.View.INVISIBLE;
 
 public class StartingHutActivity extends AppCompatActivity  {
-    public static final String IP="13.209.161.83";
+    public static final String IP="172.20.10.2";
     private static final String URL_ADDRESS_SET_ONOFF = "http://"+IP+":8080/airquayRowing/main/setOnOff";//Onoff 조작 URL
     private static final String URL_ADDRESS_STOPTIME = "http://"+IP+":8080/airquayRowing/main/pastTimeSave";//멈춘 랩 시간 (종료, 리셋) 전송 URL
     private static final String URL_ADDRESS_STARTTIME="http://"+IP+":8080/airquayRowing/main/startTimeSend";//시작 시간 전송 URL
@@ -346,7 +346,8 @@ public class StartingHutActivity extends AppCompatActivity  {
                         String min = Long.toString(Long.parseLong(totalmin) % 60);
                         if (Long.parseLong(min) < 10)
                             min = "0" + min;
-                        hEll = hour + ":" + min + ":" + sec + "." + tinysec;
+                        //hEll = hour + ":" + min + ":" + sec + "." + tinysec; // -> 12시~13시 사이에 측정 시 hour가 12로 되는 오류가 있음.
+                        hEll = "00" + ":" + min + ":" + sec + "." + tinysec;
 
                         ongoingTime.setText(hEll);
                     }
